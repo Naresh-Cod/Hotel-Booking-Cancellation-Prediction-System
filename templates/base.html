@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Hotel Booking Cancellation Prediction{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <i class="fas fa-hotel"></i>
+                <h2>Hotel Predict</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li class="{% if request.path == '/' %}active{% endif %}">
+                        <a href="{{ url_for('main.dashboard') }}">
+                            <i class="fas fa-chart-line"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="{% if request.path == '/bookings' %}active{% endif %}">
+                        <a href="{{ url_for('main.bookings') }}">
+                            <i class="fas fa-book"></i>
+                            <span>Bookings</span>
+                        </a>
+                    </li>
+                    <li class="{% if request.path == '/predict' %}active{% endif %}">
+                        <a href="{{ url_for('main.predict') }}">
+                            <i class="fas fa-magic"></i>
+                            <span>Predict</span>
+                        </a>
+                    </li>
+                    <li class="{% if request.path == '/analytics' %}active{% endif %}">
+                        <a href="{{ url_for('main.analytics') }}">
+                            <i class="fas fa-chart-pie"></i>
+                            <span>Analytics</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <img src="{{ url_for('static', filename='images/user.png') }}" alt="User Avatar">
+                    <div>
+                        <p class="user-name">Admin User</p>
+                        <p class="user-role">Administrator</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+
+</html>

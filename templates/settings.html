@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Settings - Hotel Booking{% endblock %}
+{% block content %}
+<header class="top-nav">
+    <div class="menu-toggle"><i class="fas fa-bars"></i></div>
+    <div class="search-bar"><i class="fas fa-search"></i><input type="text" placeholder="Search..."></div>
+    <div class="top-nav-right">
+        <div class="theme-toggle"><i class="fas fa-moon"></i></div>
+        <div class="notifications"><i class="fas fa-bell"></i><span class="badge">3</span></div>
+        <div class="user-dropdown">
+            <img src="{{ url_for('static', filename='images/user.png') }}" alt="User Avatar">
+            <i class="fas fa-chevron-down"></i>
+        </div>
+    </div>
+</header>
+<div class="page-content active" id="settings-page">
+    <div class="page-header">
+        <h1>Settings</h1>
+    </div>
+    <div class="settings-container">
+        <div class="settings-sidebar">
+            <ul class="settings-nav">
+                <li class="active"><a href="#general-settings">General</a></li>
+            </ul>
+        </div>
+        <div class="settings-content">
+            <div class="settings-section active" id="general-settings">
+                <h2>General Settings</h2>
+                <form class="settings-form">
+                    <div class="form-group">
+                        <label>Hotel Name</label>
+                        <input type="text" value="Grand Hotel">
+                    </div>
+                    <button type="submit" class="btn-primary">Save Changes</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CancellyticS - Hotel Cancellation Prediction</title>
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://unpkg.com/lucide@latest/dist/lucide.min.css" rel="stylesheet">
+</head>
+<body>
+  <header class="navbar">
+    <div class="logo">
+      <i data-lucide="hotel" class="icon"></i>
+      <h1>CancellyticS</h1>
+    </div>
+    <nav class="nav-links">
+      <a href="#" class="active">Dashboard</a>
+      <a href="#">Bookings</a>
+      <a href="#">Analytics</a>
+      <a href="#">Help</a>
+    </nav>
+    <div class="user-profile">
+      <span>Admin</span>
+      <div class="avatar">A</div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="header">
+      <h2>Hotel Cancellation Analytics</h2>
+      <p>Optimize resources with predictive cancellation insights</p>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-header">
+          <h3>Total Bookings</h3>
+          <i data-lucide="calendar" class="stat-icon"></i>
+        </div>
+        <p class="stat-value">126</p>
+        <p class="stat-meta">Current Month</p>
+      </div>
+      <div class="stat-card">
+        <div class="stat-header">
+          <h3>Cancellation Rate</h3>
+          <i data-lucide="x-circle" class="stat-icon text-danger"></i>
+        </div>
+        <p class="stat-value">22.5%</p>
+        <p class="stat-meta"><i data-lucide="arrow-up" class="icon-sm text-danger"></i> +2.5% from last month</p>
+      </div>
+      <div class="stat-card">
+        <div class="stat-header">
+          <h3>High Risk Bookings</h3>
+          <i data-lucide="alert-circle" class="stat-icon text-warning"></i>
+        </div>
+        <p class="stat-value">18</p>
+        <p class="stat-meta"><i data-lucide="clock" class="icon-sm"></i> Avg. Lead Time: 45 days</p>
+      </div>
+    </div>
+
+    <div class="prediction-grid">
+      <div class="card prediction-form">
+        <h3>Predict Cancellation</h3>
+        <form id="bookingForm">
+          <div class="form-grid">
+            <div class="form-group"><label>Adults</label><input type="number" id="adults" min="1" value="2" required></div>
+            <div class="form-group"><label>Children</label><input type="number" id="children" min="0" value="0"></div>
+            <div class="form-group"><label>Week Nights</label><input type="number" id="weekNights" min="0" value="2"></div>
+            <div class="form-group"><label>Weekend Nights</label><input type="number" id="weekendNights" min="0" value="1"></div>
+            <div class="form-group"><label>Room Type</label><select id="roomType">
+              <option value="Standard">Standard</option><option value="Deluxe">Deluxe</option><option value="Executive">Executive</option>
+              <option value="Premium">Premium</option><option value="Suite">Suite</option>
+            </select></div>
+            <div class="form-group"><label>Meal Plan</label><select id="mealPlan">
+              <option value="Meal Plan 1">Meal Plan 1</option><option value="Meal Plan 2">Meal Plan 2</option>
+              <option value="Meal Plan 3">Meal Plan 3</option><option value="Not Selected">Not Selected</option>
+            </select></div>
+            <div class="form-group"><label>Lead Time (days)</label><input type="number" id="leadTime" min="0" value="30"></div>
+            <div class="form-group"><label>Arrival Date</label><input type="date" id="arrivalDate" required></div>
+            <div class="form-group"><label>Market Segment</label><select id="marketSegment">
+              <option value="Direct">Direct</option><option value="Corporate">Corporate</option><option value="Online">Online</option>
+              <option value="Offline">Offline</option><option value="Travel Agent">Travel Agent</option>
+            </select></div>
+            <div class="form-group"><label>Avg. Price Per Room</label><input type="number" id="avgPrice" min="0" value="120"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Previous Cancellations</label><input type="number" id="prevCancellations" min="0" value="0"></div>
+            <div class="form-group"><label>Previous Bookings</label><input type="number" id="prevBookings" min="0" value="0"></div>
+            <div class="form-group"><label>Special Requests</label><input type="number" id="specialRequests" min="0" value="0"></div>
+          </div>
+          <div class="form-switches">
+            <div class="switch-group"><label class="switch"><input type="checkbox" id="parkingSpace"><span class="slider"></span></label><span>Parking</span></div>
+            <div class="switch-group"><label class="switch"><input type="checkbox" id="repeatedGuest"><span class="slider"></span></label><span>Repeated Guest</span></div>
+          </div>
+          <button type="submit" class="btn-predict">Predict Cancellation</button>
+        </form>
+      </div>
+      <div class="card prediction-result" id="predictionResult" style="display: none;">
+        <h3>Prediction Result</h3>
+        <div class="result-content">
+          <div class="result-icon" id="resultIcon"></div>
+          <h4 id="resultTitle"></h4>
+          <p class="result-probability" id="resultProbability"></p>
+          <p class="result-meta">Cancellation Probability</p>
+          <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+        </div>
+        <div class="recommendations"><h4>Recommended Actions:</h4><ul id="recommendationsList"></ul></div>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <div class="tab-header">
+        <button class="tab-btn active" data-tab="monthly">Monthly Trends</button>
+        <button class="tab-btn" data-tab="category">By Room Type</button>
+      </div>
+      <div class="tab-content active" id="monthly"><div class="chart-container"><canvas id="monthlyChart"></canvas></div></div>
+      <div class="tab-content" id="category"><div class="chart-container"><canvas id="categoryChart"></canvas></div></div>
+    </div>
+
+    <div class="card booking-table">
+      <h3>Recent Bookings</h3>
+      <div class="table-container">
+        <table>
+          <thead><tr><th>ID</th><th>Room</th><th>Arrival</th><th>Stay</th><th>Status</th><th class="text-right">Price</th><th class="text-right">Cancel Risk</th></tr></thead>
+          <tbody id="bookingsTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p>&copy; 2025 CancellyticS - Hotel Booking Cancellation Prediction System</p>
+  </footer>
+
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

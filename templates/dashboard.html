@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Hotel Booking{% endblock %}
+
+{% block content %}
+<!-- Top Navigation Bar -->
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Dashboard</title>
+</head>
+
+<body>
+    <h1>Booking Statistics</h1>
+    <p>Total Bookings: {{ stats.total }}</p>
+    <p>Confirmed: {{ stats.confirmed }}</p>
+    <p>Cancelled: {{ stats.cancelled }}</p>
+    <p>Cancellation Rate: {{ "%.2f"|format(stats.cancellation_rate * 100) }}%</p>
+</body>
+
+</html>
+{% endblock %}

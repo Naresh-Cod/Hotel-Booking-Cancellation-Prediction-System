@@ -1,0 +1,286 @@
+{% extends "base.html" %}
+
+{% block title %}Predict Cancellation - Hotel Booking{% endblock %}
+
+{% block content %}
+<!-- Top Navigation Bar -->
+<header class="top-nav">
+    <div class="menu-toggle">
+        <i class="fas fa-bars"></i>
+    </div>
+    <div class="search-bar">
+        <i class="fas fa-search"></i>
+        <input type="text" placeholder="Search...">
+    </div>
+    <div class="top-nav-right">
+        <div class="theme-toggle">
+            <i class="fas fa-moon"></i>
+        </div>
+        <div class="notifications">
+            <i class="fas fa-bell"></i>
+            <span class="badge">3</span>
+        </div>
+        <div class="user-dropdown">
+            <img src="{{ url_for('static', filename='images/user.png') }}" alt="User Avatar">
+            <i class="fas fa-chevron-down"></i>
+        </div>
+    </div>
+</header>
+
+<!-- Prediction Page -->
+<div class="page-content active" id="predict-page">
+    <div class="page-header">
+        <h1>Cancellation Prediction</h1>
+    </div>
+
+    <div class="prediction-container">
+        <!-- Prediction Form -->
+        <div class="form-card">
+            <div class="form-header">
+                <h3>Booking Details</h3>
+                <p>Enter the booking details to predict cancellation probability</p>
+            </div>
+            <div class="form-body">
+                <form id="prediction-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="noOfAdults">Number of Adults</label>
+                            <input type="number" id="noOfAdults" name="noOfAdults" min="1" value="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="noOfChildren">Number of Children</label>
+                            <input type="number" id="noOfChildren" name="noOfChildren" min="0" value="0" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="noOfWeekendNights">Weekend Nights</label>
+                            <input type="number" id="noOfWeekendNights" name="noOfWeekendNights" min="0" value="0"
+                                required>
+                        </div>
+                        <div class="form-group">
+                            <label for="noOfWeekNights">Week Nights</label>
+                            <input type="number" id="noOfWeekNights" name="noOfWeekNights" min="0" value="1" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="typeOfMealPlan">Meal Plan</label>
+                            <select id="typeOfMealPlan" name="typeOfMealPlan" required>
+                                <option value="Meal Plan 1">Meal Plan 1</option>
+                                <option value="Meal Plan 2">Meal Plan 2</option>
+                                <option value="Meal Plan 3">Meal Plan 3</option>
+                                <option value="No Meal Plan">No Meal Plan</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="roomTypeReserved">Room Type</label>
+                            <select id="roomTypeReserved" name="roomTypeReserved" required>
+                                <option value="Room_Type 1">Standard</option>
+                                <option value="Room_Type 2">Deluxe</option>
+                                <option value="Room_Type 3">Suite</option>
+                                <option value="Room_Type 4">Executive</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="leadTime">Lead Time (days)</label>
+                            <input type="number" id="leadTime" name="leadTime" min="0" value="30" required>
+                            <small>Days between booking and arrival</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="avgPricePerRoom">Average Price Per Room</label>
+                            <input type="number" id="avgPricePerRoom" name="avgPricePerRoom" min="0" value="100"
+                                step="0.01" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="marketSegmentType">Market Segment</label>
+                            <select id="marketSegmentType" name="marketSegmentType" required>
+                                <option value="Online">Online</option>
+                                <option value="Offline">Offline</option>
+                                <option value="Corporate">Corporate</option>
+                                <option value="Travel Agent">Travel Agent</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="noOfSpecialRequests">Number of Special Requests</label>
+                            <input type="number" id="noOfSpecialRequests" name="noOfSpecialRequests" min="0" value="0"
+                                required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group checkbox-group">
+                            <input type="checkbox" id="requiredCarParkingSpace" name="requiredCarParkingSpace">
+                            <label for="requiredCarParkingSpace">Car Parking Required</label>
+                            <small>Does the guest need a parking space?</small>
+                        </div>
+                        <div class="form-group checkbox-group">
+                            <input type="checkbox" id="repeatedGuest" name="repeatedGuest">
+                            <label for="repeatedGuest">Repeated Guest</label>
+                            <small>Has the guest stayed before?</small>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="noOfPreviousCancellations">Previous Cancellations</label>
+                            <input type="number" id="noOfPreviousCancellations" name="noOfPreviousCancellations" min="0"
+                                value="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="noOfPreviousBookingsNotCanceled">Previous Bookings Not Canceled</label>
+                            <input type="number" id="noOfPreviousBookingsNotCanceled"
+                                name="noOfPreviousBookingsNotCanceled" min="0" value="0" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-primary btn-full">Predict Cancellation</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Prediction Results -->
+        <div class="result-card">
+            <div class="result-header">
+                <h3>Prediction Result</h3>
+                <p>The AI model's prediction based on the provided booking details</p>
+            </div>
+            <div class="result-body" id="prediction-result">
+                <div class="empty-result">
+                    <i class="fas fa-chart-line"></i>
+                    <p>Fill out the booking details form and click "Predict Cancellation" to see the prediction result.
+                    </p>
+                </div>
+            </div>
+            <div class="result-footer">
+                <button class="btn-outline btn-full" disabled id="save-booking-btn">Save Booking</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('prediction-form');
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const submitBtn = form.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+
+            // Convert form data to JSON
+            const formData = new FormData(form);
+            const data = {};
+            formData.forEach((value, key) => {
+                data[key] = value;
+            });
+
+            // Add checkbox values
+            data['requiredCarParkingSpace'] = document.getElementById('requiredCarParkingSpace').checked ? '1' : '0';
+            data['repeatedGuest'] = document.getElementById('repeatedGuest').checked ? '1' : '0';
+
+            // Send prediction request
+            fetch("{{ url_for('main.predict') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+                .then(response => response.json())
+                .then(result => {
+                    displayPredictionResult(result);
+                    document.getElementById('save-booking-btn').disabled = false;
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Predict Cancellation';
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Predict Cancellation';
+                });
+        });
+
+        // Save booking button
+        document.getElementById('save-booking-btn').addEventListener('click', function () {
+            const formData = new FormData(document.getElementById('prediction-form'));
+            const data = {
+                booking_id: 'B' + Math.floor(1000 + Math.random() * 9000), // Temporary ID
+                guest_name: 'New Guest', // You should add a name field to your form
+                room_type: formData.get('roomTypeReserved'),
+                check_in: new Date().toISOString().split('T')[0], // Today's date
+                check_out: new Date(Date.now() + 86400000 * parseInt(formData.get('noOfWeekNights'))).toISOString().split('T')[0],
+                adults: formData.get('noOfAdults'),
+                children: formData.get('noOfChildren'),
+                weekend_nights: formData.get('noOfWeekendNights'),
+                week_nights: formData.get('noOfWeekNights'),
+                meal_plan: formData.get('typeOfMealPlan'),
+                car_parking: document.getElementById('requiredCarParkingSpace').checked,
+                lead_time: formData.get('leadTime'),
+                market_segment: formData.get('marketSegmentType'),
+                repeated_guest: document.getElementById('repeatedGuest').checked,
+                previous_cancellations: formData.get('noOfPreviousCancellations'),
+                previous_bookings: formData.get('noOfPreviousBookingsNotCanceled'),
+                avg_price: formData.get('avgPricePerRoom'),
+                special_requests: formData.get('noOfSpecialRequests')
+            };
+
+            fetch("{{ url_for('main.create_booking') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    alert('Booking saved successfully!');
+                    window.location.href = "{{ url_for('main.bookings') }}";
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error saving booking');
+                });
+        });
+
+        function displayPredictionResult(prediction) {
+            const resultContainer = document.getElementById('prediction-result');
+            const alertClass = prediction.risk === 'high' ? 'danger' :
+                prediction.risk === 'medium' ? 'warning' : 'success';
+
+            const alertIcon = prediction.risk === 'high' ? 'fa-times-circle' :
+                prediction.risk === 'medium' ? 'fa-exclamation-circle' : 'fa-check-circle';
+
+            const alertTitle = prediction.prediction === 'Cancelled' ?
+                'Likely to Cancel' : 'Likely to Keep Reservation';
+
+            resultContainer.innerHTML = `
+                <div class="prediction-alert ${alertClass}">
+                    <i class="fas ${alertIcon}"></i>
+                    <div class="prediction-alert-content">
+                        <h4>${alertTitle}</h4>
+                        <p>Our model predicts this booking will ${prediction.prediction === 'Cancelled' ? 'be cancelled' : 'not be cancelled'} with ${Math.round(prediction.probability * 100)}% confidence.</p>
+                    </div>
+                </div>
+                <div class="prediction-section">
+                    <h4>Risk Assessment</h4>
+                    <div class="risk-indicator">
+                        <i class="fas ${alertIcon} ${prediction.risk}"></i>
+                        <span>${prediction.risk.charAt(0).toUpperCase() + prediction.risk.slice(1)} Risk</span>
+                    </div>
+                    <p>${prediction.risk === 'high'
+                    ? 'This booking has a high risk of cancellation. Consider overbooking or requiring a deposit.'
+                    : prediction.risk === 'medium'
+                        ? 'This booking has a moderate risk of cancellation. Monitor closely as the check-in date approaches.'
+                        : 'This booking has a low risk of cancellation. No special action required.'}</p>
+                </div>
+            `;
+        }
+    });
+</script>
+{% endblock %}

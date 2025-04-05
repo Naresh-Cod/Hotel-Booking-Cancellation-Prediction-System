@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel Booking Cancellation Prediction System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <i class="fas fa-hotel"></i>
+                <h2>Hotel Predict</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li class="active">
+                        <a href="#" data-page="dashboard">
+                            <i class="fas fa-chart-line"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" data-page="bookings">
+                            <i class="fas fa-book"></i>
+                            <span>Bookings</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" data-page="predict">
+                            <i class="fas fa-magic"></i>
+                            <span>Predict</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" data-page="analytics">
+                            <i class="fas fa-chart-pie"></i>
+                            <span>Analytics</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" data-page="settings">
+                            <i class="fas fa-cog"></i>
+                            <span>Settings</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <img src="https://via.placeholder.com/40" alt="User Avatar">
+                    <div>
+                        <p class="user-name">Admin User</p>
+                        <p class="user-role">Administrator</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Top Navigation Bar -->
+            <header class="top-nav">
+                <div class="menu-toggle">
+                    <i class="fas fa-bars"></i>
+                </div>
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search...">
+                </div>
+                <div class="top-nav-right">
+                    <div class="theme-toggle">
+                        <i class="fas fa-moon"></i>
+                    </div>
+                    <div class="notifications">
+                        <i class="fas fa-bell"></i>
+                        <span class="badge">3</span>
+                    </div>
+                    <div class="user-dropdown">
+                        <img src="https://via.placeholder.com/40" alt="User Avatar">
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Dashboard Page -->
+            <div class="page-content active" id="dashboard-page">
+                <div class="page-header">
+                    <h1>Dashboard</h1>
+                    <div class="date-picker">
+                        <i class="fas fa-calendar"></i>
+                        <span>Last 30 days</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="stats-cards">
+                    <div class="stat-card">
+                        <div class="stat-card-content">
+                            <h3>Total Bookings</h3>
+                            <p class="stat-value">1,248</p>
+                            <p class="stat-change positive">+20.1% from last month</p>
+                        </div>
+                        <div class="stat-card-icon">
+                            <i class="fas fa-book"></i>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-content">
+                            <h3>Active Bookings</h3>
+                            <p class="stat-value">842</p>
+                            <p class="stat-change positive">+12.5% from last month</p>
+                        </div>
+                        <div class="stat-card-icon">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-content">
+                            <h3>Cancellation Rate</h3>
+                            <p class="stat-value">18.2%</p>
+                            <p class="stat-change negative">-2.5% from last month</p>
+                        </div>
+                        <div class="stat-card-icon">
+                            <i class="fas fa-times-circle"></i>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-content">
+                            <h3>Predicted Cancellations</h3>
+                            <p class="stat-value">76</p>
+                            <p class="stat-change">For next 7 days</p>
+                        </div>
+                        <div class="stat-card-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Section -->
+                <div class="charts-container">
+                    <div class="chart-card large">
+                        <div class="chart-header">
+                            <h3>Cancellation Rate</h3>
+                            <div class="chart-actions">
+                                <button class="btn-outline active">Monthly</button>
+                                <button class="btn-outline">Quarterly</button>
+                                <button class="btn-outline">Yearly</button>
+                            </div>
+                        </div>
+                        <div class="chart-body">
+                            <canvas id="cancellationChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3>Booking Distribution</h3>
+                            <div class="chart-actions">
+                                <button class="btn-icon"><i class="fas fa-ellipsis-v"></i></button>
+                            </div>
+                        </div>
+                        <div class="chart-body">
+                            <canvas id="distributionChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3>Prediction Accuracy</h3>
+                            <div class="chart-actions">
+                                <button class="btn-icon"><i class="fas fa-ellipsis-v"></i></button>
+                            </div>
+                        </div>
+                        <div class="chart-body">
+                            <canvas id="accuracyChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Bookings Table -->
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3>Recent Bookings</h3>
+                        <button class="btn-primary">
+                            <i class="fas fa-plus"></i>
+                            New Booking
+                        </button>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Booking ID</th>
+                                    <th>Guest Name</th>
+                                    <th>Room Type</th>
+                                    <th>Check-in</th>
+                                    <th>Check-out</th>
+                                    <th>Status</th>
+                                    <th>Cancellation Risk</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>B001</td>
+                                    <td>John Smith</td>
+                                    <td>Deluxe</td>
+                                    <td>2023-08-15</td>
+                                    <td>2023-08-20</td>
+                                    <td><span class="status-badge confirmed">Confirmed</span></td>
+                                    <td><span class="risk-badge low">Low</span></td>
+                                    <td>
+                                        <div class="table-actions">
+                                            <button class="btn-icon"><i class="fas fa-eye"></i></button>
+                                            <button class="btn-icon"><i class="fas fa-edit"></i></button>
+                                            <button class="btn-icon"><i class="fas fa-trash"></i></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>B002</td>
+                                    <td>Sarah Johnson</td>
+                                    <td>Suite</td>
+                                    <td>2023-08-18</td>
+                                    <td>2023-08-25</td>
+                                    <td><span class="status-badge confirmed">Confirmed</span></td>
+                                    <td><span class="risk-badge high">High</span></td>
+                                    <td>
+                                        <div class="table-actions">
+                                            <button class="btn-icon"><i class="fas fa-eye"></i></button>
+                                            <button class="btn-icon"><i class="fas fa-edit"></i></button>
+                                            <button class="btn-icon"><i class="fas fa-trash"></i></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>B003</td>
+                                    <td>Michael Brown</td>
+                                    <td>Standard</td>
+                                    <td>2023-08-10</td>
+                                    <td>2023-08-12</td>
+                                    <td><span class="status-badge checked-out">Checked Out</span></td>
+                                    <td><span class="risk-badge low">Low</span></td>
+                                    <td>
+                                        <div class="table-actions">
+                                            <button class="btn-icon"><i class="fas fa-eye"></i></button>
+                                            <button class="btn-icon"><i class="fas fa-edit"></i></button>
+                                            <button class="btn-icon"><i class="fas fa-trash"></i></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>B004</td>
+                                    <td>Emily Davis</td>
+                                    <td>Deluxe</td>
+                                    <td>2023-08-20</td>
+                                    <td>2023-08-22</td>
+                                    <td><span class="status-badge confirmed">Confirmed</span></td>
+                                    <td><span class="risk-badge medium">Medium</span></td>
+                                    <td>
+                                        <div class="table-actions">
+                                            <button class="btn-icon"><i class="fas fa-eye"></i></button>
+                                            <button class="btn-icon"><i class="fas fa-edit"></i></button>
+                                            <button class="btn-icon"><i class="fas fa-trash"></i></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>B005</td>
+                                    <td>Robert Wilson</td>
+                                    <td>Suite</td>
+                                    <td>2023-08-12</td>
+                                    <td>2023-08-18</td>
+                                    <td><span class="status-badge cancelled">Cancelled</span></td>
+                                    <td><span class="risk-badge high">High</span></td>
+                                    <td>
+                                        <div class="table-actions">
+                                            <button class="btn-icon"><i class="fas fa-eye"></i></button>
+                                            <button class="btn-icon"><i class="fas fa-edit"></i></button>
+                                            <button class="btn-icon"><i class="fas fa-trash"></i></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="table-footer">
+                        <div class="pagination">
+                            <button class="btn-icon"><i class="fas fa-chevron-left"></i></button>
+                            <button class="page-number active">1</button>
+                            <button class="page-number">2</button>
+                            <button class="page-number">3</button>
+                            <span>...</span>
+                            <button class="page-number">10</button>
+                            <button class="btn-icon"><i class="fas fa-chevron-right"></i></button>
+                        </div>
+                        <div class="items-per-page">
+                            <span>Show</span>
+                            <select>
+                                <option>5</option>
+                                <option selected>10</option>
+                                <option>25</option>
+                                <option>50</option>
+                            </select>
+                            <span>items per page</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bookings Page -->
+            <div class="page-content" id="bookings-page">
+                <div class="page-header">
+                    <h1>Bookings</h1>
+                    <button class="btn-primary">
+                        <i class="fas fa-plus"></i>
+                        New Booking
+                    </button>
+                </div>
+
+                <!-- Bookings Filter -->
+                <div class="filter-card">
+                    <div class="filter-row">
+                        <div class="filter-group">
+                            <label>Search</label>
+                            <div class="input-with-icon">
+                                <i class="fas fa-search"></i>
+                                <input type="text" placeholder="Search bookings...">
+                            </div>
+                        </div>
+                        <div class="filter-group">
+                            <label>Status</label>
+                            <select>
+                                <option>All Statuses</option>
+                                <option>Confirmed</option>
+                                <option>Cancelled</option>
+                                <option>Checked In</option>
+                                <option>Checked Out</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Room Type</label>
+                            <select>
+                                <option>All Room Types</option>
+                                <option>Standard</option>
+                                <option>Deluxe</option>
+                                <option>Suite</option>
+                                <option>Executive</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Date Range</label>
+                            <div class="input-with-icon">
+                                <i class="fas fa-calendar"></i>
+                                <input type="text" placeholder="Select date range">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="filter-actions">
+                        <button class="btn-outline">Reset</button>
+                        <button class="btn-primary">Apply Filters</button>
+                    </div>
+                </div>
+
+                <!-- Bookings Table -->
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3>All Bookings</h3>
+                        <div class="table-actions">
+                            <button class="btn-outline">
+                                <i class="fas fa-file-export"></i>
+                                Export
+                            </button>
+                            <button class="btn-outline">
+                                <i class="fas fa-file-import"></i>
+                                Import
+                            </button>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        <input type="checkbox" class="select-all-checkbox">
+                                    </th>
+                                    <th>Booking ID</th>
+                                    <th>Guest Name</th>
+                                    <th>Room Type</th>
+                                    <th>Check-in</th>
+                                    <th>Check-out</th>
+                                    <th>Status</th>
+                                    <th>Cancellation Risk</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <input type="checkbox" class="row-checkbox">
+                                    </td>
+                                    <td>B001</td>
+                                    <td>John Smith</td>
+                                    <td>Deluxe</td>
+                                    <td>2023-08-15</td>
+                                    <td>2023-08-20</td>
+                                    <td><span class="status-badge confirmed">Confirmed</span></td>
+                                    <td><span class="risk-badge low">Low</span></td>
+                                    <td>
+                                        <div class="table-actions">
+                                            <button class="btn-icon"><i class="fas fa-eye"></i></button>
+                                            <button class="btn-icon"><i class="fas fa-edit"></i></button>
+                                            <button class="btn-icon"><i class="fas fa-trash"></i></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <input type="checkbox" class="row-checkbox">
+                                    </td>
+                                    <td>B002</td>
+                                    <td>Sarah Johnson</td>
+                                    <td>Suite</td>
+                                    <td>2023-08-18</td>
+                                    <td>2023-08-25</td>
+                                    <td><span class="status-badge confirmed">Confirmed</span></td>
+                                    <td><span class="risk-badge high">High</span></td>
+                                    <td>
+                                        <div class="table-actions">
+                                            <button class="btn-icon"><i class="fas fa-eye"></i></button>
+                                            <button class="btn-icon"><i class="fas fa-edit"></i></button>
+                                            <button class="btn-icon"><i class="fas fa-trash"></i></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <input type="checkbox" class="row-checkbox">
+                                    </td>
+                                    <td>B003</td>
+                                    <td>Michael Brown</td>
+                                    <td>Standard</td>
+                                    <td>2023-08-10</td>
+                                    <td>2023-08-12</td>
+                                    <td><span class="status-badge checked-out">Checked Out</span></td>
+                                    <td><span class="risk-badge low">Low</span></td>
+                                    <td>
+                                        <div class="table-actions">
+                                            <button class="btn-icon"><i class="fas fa-eye"></i></button>
+                                            <button class="btn-icon"><i class="fas fa-edit"></i></button>
+                                            <button class="btn-icon"><i class="fas fa-trash"></i></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <input type="checkbox" class="row-checkbox">
+                                    </td>
+                                    <td>B004</td>
+                                    <td>Emily Davis</td>
+                                    <td>Deluxe</td>
+                                    <td>2023-08-20</td>
+                                    <td>2023-08-22</td>
+                                    <td><span class="status-badge confirmed">Confirmed</span></td>
+                                    <td><span class="risk-badge medium">Medium</span></td>
+                                    <td>
+                                        <div class="table-actions">
+                                            <button class="btn-icon"><i class="fas fa-eye"></i></button>
+                                            <button class="btn-icon"><i class="fas fa-edit"></i></button>
+                                            <button class="btn-icon"><i class="fas fa-trash"></i></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <input type="checkbox" class="row-checkbox">
+                                    </td>
+                                    <td>B005</td>
+                                    <td>Robert Wilson</td>
+                                    <td>Suite</td>
+                                    <td>2023-08-12</td>
+                                    <td>2023-08-18</td>
+                                    <td><span class="status-badge cancelled">Cancelled</span></td>
+                                    <td><span class="risk-badge high">High</span></td>
+                                    <td>
+                                        <div class="table-actions">
+                                            <button class="btn-icon"><i class="fas fa-eye"></i></button>
+                                            <button class="btn-icon"><i class="fas fa-edit"></i></button>
+                                            <button class="btn-icon"><i class="fas fa-trash"></i></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="table-footer">
+                        <div class="pagination">
+                            <button class="btn-icon"><i class="fas fa-chevron-left"></i></button>
+                            <button class="page-number active">1</button>
+                            <button class="page-number">2</button>
+                            <button class="page-number">3</button>
+                            <span>...</span>
+                            <button class="page-number">10</button>
+                            <button class="btn-icon"><i class="fas fa-chevron-right"></i></button>
+                        </div>
+                        <div class="items-per-page">
+                            <span>Show</span>
+                            <select>
+                                <option>5</option>
+                                <option selected>10</option>
+                                <option>25</option>
+                                <option>50</option>
+                            </select>
+                            <span>items per page</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Prediction Page -->
+            <div class="page-content" id="predict-page">
+                <div class="page-header">
+                    <h1>Cancellation Prediction</h1>
+                </div>
+
+                <div class="prediction-container">
+                    <!-- Prediction Form -->
+                    <div class="form-card">
+                        <div class="form-header">
+                            <h3>Booking Details</h3>
+                            <p>Enter the booking details to predict cancellation probability</p>
+                        </div>
+                        <div class="form-body">
+                            <form id="prediction-form">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="noOfAdults">Number of Adults</label>
+                                        <input type="number" id="noOfAdults" name="noOfAdults" min="1" value="1">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="noOfChildren">Number of Children</label>
+                                        <input type="number" id="noOfChildren" name="noOfChildren" min="0" value="0">
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="noOfWeekendNights">Weekend Nights</label>
+                                        <input type="number" id="noOfWeekendNights" name="noOfWeekendNights" min="0" value="0">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="noOfWeekNights">Week Nights</label>
+                                        <input type="number" id="noOfWeekNights" name="noOfWeekNights" min="0" value="1">
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="typeOfMealPlan">Meal Plan</label>
+                                        <select id="typeOfMealPlan" name="typeOfMealPlan">
+                                            <option value="Meal Plan 1">Meal Plan 1</option>
+                                            <option value="Meal Plan 2">Meal Plan 2</option>
+                                            <option value="Meal Plan 3">Meal Plan 3</option>
+                                            <option value="No Meal Plan">No Meal Plan</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="roomTypeReserved">Room Type</label>
+                                        <select id="roomTypeReserved" name="roomTypeReserved">
+                                            <option value="Room_Type 1">Standard</option>
+                                            <option value="Room_Type 2">Deluxe</option>
+                                            <option value="Room_Type 3">Suite</option>
+                                            <option value="Room_Type 4">Executive</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="leadTime">Lead Time (days)</label>
+                                        <input type="number" id="leadTime" name="leadTime" min="0" value="30">
+                                        <small>Days between booking and arrival</small>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="avgPricePerRoom">Average Price Per Room</label>
+                                        <input type="number" id="avgPricePerRoom" name="avgPricePerRoom" min="0" value="100">
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="marketSegmentType">Market Segment</label>
+                                        <select id="marketSegmentType" name="marketSegmentType">
+                                            <option value="Online">Online</option>
+                                            <option value="Offline">Offline</option>
+                                            <option value="Corporate">Corporate</option>
+                                            <option value="Travel Agent">Travel Agent</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="noOfSpecialRequests">Number of Special Requests</label>
+                                        <input type="number" id="noOfSpecialRequests" name="noOfSpecialRequests" min="0" value="0">
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group checkbox-group">
+                                        <input type="checkbox" id="requiredCarParkingSpace" name="requiredCarParkingSpace">
+                                        <label for="requiredCarParkingSpace">Car Parking Required</label>
+                                        <small>Does the guest need a parking space?</small>
+                                    </div>
+                                    <div class="form-group checkbox-group">
+                                        <input type="checkbox" id="repeatedGuest" name="repeatedGuest">
+                                        <label for="repeatedGuest">Repeated Guest</label>
+                                        <small>Has the guest stayed before?</small>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="noOfPreviousCancellations">Previous Cancellations</label>
+                                        <input type="number" id="noOfPreviousCancellations" name="noOfPreviousCancellations" min="0" value="0">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="noOfPreviousBookingsNotCanceled">Previous Bookings Not Canceled</label>
+                                        <input type="number" id="noOfPreviousBookingsNotCanceled" name="noOfPreviousBookingsNotCanceled" min="0" value="0">
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn-primary btn-full">Predict Cancellation</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Prediction Results -->
+                    <div class="result-card">
+                        <div class="result-header">
+                            <h3>Prediction Result</h3>
+                            <p>The AI model's prediction based on the provided booking details</p>
+                        </div>
+                        <div class="result-body" id="prediction-result">
+                            <div class="empty-result">
+                                <i class="fas fa-chart-line"></i>
+                                <p>Fill out the booking details form and click "Predict Cancellation" to see the prediction result.</p>
+                            </div>
+                            <!-- Results will be inserted here by JavaScript -->
+                        </div>
+                        <div class="result-footer">
+                            <button class="btn-outline btn-full" disabled id="save-booking-btn">Save Booking</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analytics Page -->
+            <div class="page-content" id="analytics-page">
+                <div class="page-header">
+                    <h1>Analytics</h1>
+                    <div class="date-picker">
+                        <i class="fas fa-calendar"></i>
+                        <span>Last 30 days</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                </div>
+
+                <!-- Analytics Cards -->
+                <div class="analytics-cards">
+                    <div class="analytics-card">
+                        <div class="analytics-header">
+                            <h3>Model Performance</h3>
+                            <div class="chart-actions">
+                                <button class="btn-icon"><i class="fas fa-ellipsis-v"></i></button>
+                            </div>
+                        </div>
+                        <div class="analytics-body">
+                            <div class="metrics-grid">
+                                <div class="metric-item">
+                                    <h4>Accuracy</h4>
+                                    <p class="metric-value">87.5%</p>
+                                    <p class="metric-desc">Overall prediction accuracy</p>
+                                </div>
+                                <div class="metric-item">
+                                    <h4>Precision</h4>
+                                    <p class="metric-value">82.3%</p>
+                                    <p class="metric-desc">True positives / predicted positives</p>
+                                </div>
+                                <div class="metric-item">
+                                    <h4>Recall</h4>
+                                    <p class="metric-value">79.1%</p>
+                                    <p class="metric-desc">True positives / actual positives</p>
+                                </div>
+                                <div class="metric-item">
+                                    <h4>F1 Score</h4>
+                                    <p class="metric-value">80.7%</p>
+                                    <p class="metric-desc">Harmonic mean of precision and recall</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="analytics-card">
+                        <div class="analytics-header">
+                            <h3>Feature Importance</h3>
+                            <div class="chart-actions">
+                                <button class="btn-icon"><i class="fas fa-ellipsis-v"></i></button>
+                            </div>
+                        </div>
+                        <div class="analytics-body">
+                            <canvas id="featureImportanceChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Advanced Analytics -->
+                <div class="analytics-container">
+                    <div class="analytics-card large">
+                        <div class="analytics-header">
+                            <h3>Cancellation Trends</h3>
+                            <div class="chart-actions">
+                                <button class="btn-outline active">Daily</button>
+                                <button class="btn-outline">Weekly</button>
+                                <button class="btn-outline">Monthly</button>
+                            </div>
+                        </div>
+                        <div class="analytics-body">
+                            <canvas id="trendsChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="analytics-card">
+                        <div class="analytics-header">
+                            <h3>Cancellation by Room Type</h3>
+                            <div class="chart-actions">
+                                <button class="btn-icon"><i class="fas fa-ellipsis-v"></i></button>
+                            </div>
+                        </div>
+                        <div class="analytics-body">
+                            <canvas id="roomTypeChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="analytics-card">
+                        <div class="analytics-header">
+                            <h3>Cancellation by Lead Time</h3>
+                            <div class="chart-actions">
+                                <button class="btn-icon"><i class="fas fa-ellipsis-v"></i></button>
+                            </div>
+                        </div>
+                        <div class="analytics-body">
+                            <canvas id="leadTimeChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Page -->
+            <div class="page-content" id="settings-page">
+                <div class="page-header">
+                    <h1>Settings</h1>
+                </div>
+                
+                <div class="settings-container">
+                    <div class="settings-sidebar">
+                        <ul class="settings-nav">
+                            <li class="active"><a href="#general-settings">General</a></li>
+                            <li><a href="#account-settings">Account</a></li>
+                            <li><a href="#model-settings">Model Configuration</a></li>
+                            <li><a href="#notification-settings">Notifications</a></li>
+                            <li><a href="#api-settings">API Integration</a></li>
+                        </ul>
+                    </div>
+                    <div class="settings-content">
+                        <div class="settings-section active" id="general-settings">
+                            <h2>General Settings</h2>
+                            <form class="settings-form">
+                                <div class="form-group">
+                                    <label>Hotel Name</label>
+                                    <input type="text" value="Grand Hotel">
+                                </div>
+                                <div class="form-group">
+                                    <label>Language</label>
+                                    <select>
+                                        <option selected>English</option>
+                                        <option>Spanish</option>
+                                        <option>French</option>
+                                        <option>German</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Time Zone</label>
+                                    <select>
+                                        <option selected>UTC-05:00 Eastern Time</option>
+                                        <option>UTC-06:00 Central Time</option>
+                                        <option>UTC-07:00 Mountain Time</option>
+                                        <option>UTC-08:00 Pacific Time</option>
+                                    </select>
+                                </div>
+                                <div class="form-group checkbox-group">
+                                    <input type="checkbox" id="darkMode" checked>
+                                    <label for="darkMode">Dark Mode</label>
+                                </div>
+                                <button type="submit" class="btn-primary">Save Changes</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

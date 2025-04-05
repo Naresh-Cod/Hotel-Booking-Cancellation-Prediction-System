@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Analytics - Hotel Booking{% endblock %}
+{% block content %}
+<header class="top-nav">
+    <div class="menu-toggle"><i class="fas fa-bars"></i></div>
+    <div class="search-bar"><i class="fas fa-search"></i><input type="text" placeholder="Search..."></div>
+    <div class="top-nav-right">
+        <div class="theme-toggle"><i class="fas fa-moon"></i></div>
+        <div class="notifications"><i class="fas fa-bell"></i><span class="badge">3</span></div>
+        <div class="user-dropdown">
+            <img src="{{ url_for('static', filename='images/user.png') }}" alt="User Avatar">
+            <i class="fas fa-chevron-down"></i>
+        </div>
+    </div>
+</header>
+<div class="page-content active" id="analytics-page">
+    <div class="page-header">
+        <h1>Analytics</h1>
+        <div class="date-picker">
+            <i class="fas fa-calendar"></i>
+            <span>Last 30 days</span>
+            <i class="fas fa-chevron-down"></i>
+        </div>
+    </div>
+    <div class="analytics-container">
+        <div class="analytics-card large">
+            <div class="analytics-header">
+                <h3>Cancellation Trends</h3>
+                <div class="chart-actions">
+                    <button class="btn-outline active">Daily</button>
+                    <button class="btn-outline">Weekly</button>
+                    <button class="btn-outline">Monthly</button>
+                </div>
+            </div>
+            <div class="analytics-body">
+                <canvas id="trendsChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const trendsCtx = document.getElementById('trendsChart');
+        if (trendsCtx) {
+            new Chart(trendsCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                    datasets: [{
+                        label: 'Cancellations',
+                        data: [20, 25, 30, 28],
+                        borderColor: '#ef4444',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

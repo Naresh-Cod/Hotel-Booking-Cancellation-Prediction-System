@@ -1,0 +1,11 @@
+flask
+flask-sqlalchemy
+flask-migrate
+scikit-learn
+pandas
+numpy
+joblib
+python-dotenv
+mysqlclient
+pymysql
+mysql-connector-python
