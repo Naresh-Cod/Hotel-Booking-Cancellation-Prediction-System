@@ -3,18 +3,16 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 
-# Initialize extensions
 db = SQLAlchemy()
 migrate = Migrate()
 
 def create_app():
-    # Correct relative paths
     base_dir = os.path.abspath(os.path.dirname(__file__))
     parent_dir = os.path.abspath(os.path.join(base_dir, os.pardir))
 
     app = Flask(__name__,
-                template_folder=os.path.join(parent_dir, 'templates'),
-                static_folder=os.path.join(parent_dir, 'static'))
+            static_folder=os.path.join(parent_dir, 'static'),
+            template_folder=os.path.join(parent_dir, 'templates'))
 
     app.config.from_object('config.Config')
 
