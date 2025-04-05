@@ -56,6 +56,20 @@ body {
     background-color: var(--bg-secondary);
 }
 
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+ul {
+    list-style: none;
+}
+
+button {
+    cursor: pointer;
+    font-family: inherit;
+}
+
 /* Layout */
 .app-container {
     display: flex;
@@ -71,6 +85,11 @@ body {
     position: fixed;
     height: 100vh;
     z-index: 100;
+    transition: transform var(--transition-speed);
+}
+
+.sidebar-collapsed .sidebar {
+    transform: translateX(calc(-1 * var(--sidebar-width)));
 }
 
 .sidebar-header {
@@ -157,6 +176,11 @@ body {
 .main-content {
     flex: 1;
     margin-left: var(--sidebar-width);
+    transition: margin var(--transition-speed);
+}
+
+.sidebar-collapsed .main-content {
+    margin-left: 0;
 }
 
 .top-nav {
@@ -531,6 +555,65 @@ body {
     color: var(--text-primary);
 }
 
+/* Filter Card */
+.filter-card {
+    background-color: var(--bg-primary);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.filter-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.filter-group label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+    color: var(--text-secondary);
+}
+
+.filter-group input,
+.filter-group select {
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 0.25rem;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+.input-with-icon {
+    position: relative;
+}
+
+.input-with-icon i {
+    position: absolute;
+    left: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+}
+
+.input-with-icon input {
+    padding-left: 2rem;
+}
+
+.filter-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
 /* Prediction Page */
 .prediction-container {
     display: grid;
@@ -605,7 +688,7 @@ body {
 
 .checkbox-group {
     flex-direction: row;
-    align-items: center;
+    align-items: flex-start;
     gap: 0.5rem;
 }
 
@@ -953,20 +1036,6 @@ button:disabled {
 
 .key-factors li {
     margin-bottom: 0.25rem;
-}
-
-.fa-spin {
-    animation: fa-spin 2s infinite linear;
-}
-
-@keyframes fa-spin {
-    0% {
-        transform: rotate(0deg);
-    }
-
-    100% {
-        transform: rotate(359deg);
-    }
 }
 
 /* Responsive */

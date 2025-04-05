@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Analytics - Hotel Booking{% endblock %}
+
 {% block content %}
 <header class="top-nav">
     <div class="menu-toggle"><i class="fas fa-bars"></i></div>
@@ -13,6 +14,7 @@
         </div>
     </div>
 </header>
+
 <div class="page-content active" id="analytics-page">
     <div class="page-header">
         <h1>Analytics</h1>
@@ -22,6 +24,7 @@
             <i class="fas fa-chevron-down"></i>
         </div>
     </div>
+
     <div class="analytics-container">
         <div class="analytics-card large">
             <div class="analytics-header">
@@ -36,12 +39,38 @@
                 <canvas id="trendsChart"></canvas>
             </div>
         </div>
+
+        <!-- Added from additional HTML -->
+        <div class="analytics-card">
+            <div class="analytics-header">
+                <h3>Cancellation by Room Type</h3>
+                <div class="chart-actions">
+                    <button class="btn-icon"><i class="fas fa-ellipsis-v"></i></button>
+                </div>
+            </div>
+            <div class="analytics-body">
+                <canvas id="roomTypeChart"></canvas>
+            </div>
+        </div>
+        <div class="analytics-card">
+            <div class="analytics-header">
+                <h3>Cancellation by Lead Time</h3>
+                <div class="chart-actions">
+                    <button class="btn-icon"><i class="fas fa-ellipsis-v"></i></button>
+                </div>
+            </div>
+            <div class="analytics-body">
+                <canvas id="leadTimeChart"></canvas>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
+
 {% block scripts %}
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        // Trends Chart
         const trendsCtx = document.getElementById('trendsChart');
         if (trendsCtx) {
             new Chart(trendsCtx, {
@@ -54,6 +83,45 @@
                         borderColor: '#ef4444',
                         fill: true,
                         tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+        // Room Type Chart (Added)
+        const roomTypeCtx = document.getElementById('roomTypeChart');
+        if (roomTypeCtx) {
+            new Chart(roomTypeCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['Standard', 'Deluxe', 'Suite', 'Executive'],
+                    datasets: [{
+                        data: [35, 25, 20, 20],
+                        backgroundColor: ['#3b82f6', '#f97316', '#10b981', '#8b5cf6']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+        // Lead Time Chart (Added)
+        const leadTimeCtx = document.getElementById('leadTimeChart');
+        if (leadTimeCtx) {
+            new Chart(leadTimeCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['0-30', '31-60', '61-90', '90+'],
+                    datasets: [{
+                        label: 'Cancellations by Lead Time',
+                        data: [40, 30, 20, 10],
+                        backgroundColor: '#ef4444'
                     }]
                 },
                 options: {

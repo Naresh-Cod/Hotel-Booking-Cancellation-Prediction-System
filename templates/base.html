@@ -19,28 +19,34 @@
             </div>
             <nav class="sidebar-nav">
                 <ul>
-                    <li class="{% if request.path == '/' %}active{% endif %}">
+                    <li class="{% if request.path == url_for('main.dashboard') %}active{% endif %}">
                         <a href="{{ url_for('main.dashboard') }}">
                             <i class="fas fa-chart-line"></i>
                             <span>Dashboard</span>
                         </a>
                     </li>
-                    <li class="{% if request.path == '/bookings' %}active{% endif %}">
+                    <li class="{% if request.path == url_for('main.bookings') %}active{% endif %}">
                         <a href="{{ url_for('main.bookings') }}">
                             <i class="fas fa-book"></i>
                             <span>Bookings</span>
                         </a>
                     </li>
-                    <li class="{% if request.path == '/predict' %}active{% endif %}">
+                    <li class="{% if request.path == url_for('main.predict') %}active{% endif %}">
                         <a href="{{ url_for('main.predict') }}">
                             <i class="fas fa-magic"></i>
                             <span>Predict</span>
                         </a>
                     </li>
-                    <li class="{% if request.path == '/analytics' %}active{% endif %}">
+                    <li class="{% if request.path == url_for('main.analytics') %}active{% endif %}">
                         <a href="{{ url_for('main.analytics') }}">
                             <i class="fas fa-chart-pie"></i>
                             <span>Analytics</span>
+                        </a>
+                    </li>
+                    <li class="{% if request.path == url_for('main.settings') %}active{% endif %}">
+                        <a href="{{ url_for('main.settings') }}">
+                            <i class="fas fa-cog"></i>
+                            <span>Settings</span>
                         </a>
                     </li>
                 </ul>
