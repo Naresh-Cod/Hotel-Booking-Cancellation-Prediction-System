@@ -1,14 +1,52 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-    <title>Error</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error - HotelPredict Pro</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/error.css') }}">
 </head>
 
 <body>
-    <h1>Error</h1>
-    <p>{{ error }}</p>
-    <a href="/">Return to Home</a>
+    <div class="error-container">
+        <div class="error-content">
+            <div class="error-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h1>An Error Occurred</h1>
+            <div class="error-details">
+                <p>{{ error }}</p>
+                {% if error_details %}
+                <details class="error-stack">
+                    <summary>Technical Details</summary>
+                    <pre>{{ error_details }}</pre>
+                </details>
+                {% endif %}
+            </div>
+            <div class="error-actions">
+                <a href="{{ url_for('main.dashboard') }}" class="btn-primary">
+                    <i class="fas fa-home"></i>
+                    Return to Dashboard
+                </a>
+                <button class="btn-outline" onclick="window.location.reload()">
+                    <i class="fas fa-sync-alt"></i>
+                    Try Again
+                </button>
+                {% if support_email %}
+                <a href="mailto:{{ support_email }}" class="btn-outline">
+                    <i class="fas fa-envelope"></i>
+                    Contact Support
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        <div class="error-footer">
+            <p>HotelPredict Pro &copy; {{ current_year }}. All rights reserved.</p>
+            <p>Error ID: {{ error_id }}</p>
+        </div>
+    </div>
 </body>
 
 </html>

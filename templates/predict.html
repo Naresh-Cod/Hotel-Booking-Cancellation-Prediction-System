@@ -1,9 +1,11 @@
 {% extends "base.html" %}
+{% block title %}Predict Cancellation - HotelPredict Pro{% endblock %}
 
-{% block title %}Predict Cancellation - Hotel Booking{% endblock %}
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/predict.css') }}">
+{% endblock %}
 
 {% block content %}
-<!-- Top Navigation Bar -->
 <header class="top-nav">
     <div class="menu-toggle">
         <i class="fas fa-bars"></i>
@@ -13,24 +15,28 @@
         <input type="text" placeholder="Search...">
     </div>
     <div class="top-nav-right">
-        <div class="theme-toggle">
+        <div class="theme-toggle" id="theme-toggle">
             <i class="fas fa-moon"></i>
         </div>
         <div class="notifications">
             <i class="fas fa-bell"></i>
-            <span class="badge">3</span>
+            <span class="badge">{{ unread_notifications }}</span>
         </div>
         <div class="user-dropdown">
-            <img src="{{ url_for('static', filename='images/user.png') }}" alt="User Avatar">
+            <img src="{{ url_for('static', filename='images/user-avatar.png') }}" alt="User Avatar">
             <i class="fas fa-chevron-down"></i>
         </div>
     </div>
 </header>
 
-<!-- Prediction Page -->
 <div class="page-content active" id="predict-page">
     <div class="page-header">
         <h1>Cancellation Prediction</h1>
+        <nav class="breadcrumbs">
+            <a href="{{ url_for('main.dashboard') }}">Dashboard</a>
+            <i class="fas fa-chevron-right"></i>
+            <span>Predict</span>
+        </nav>
     </div>
 
     <div class="prediction-container">
@@ -41,101 +47,169 @@
                 <p>Enter the booking details to predict cancellation probability</p>
             </div>
             <div class="form-body">
-                <form id="prediction-form">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="noOfAdults">Number of Adults</label>
-                            <input type="number" id="noOfAdults" name="noOfAdults" min="1" value="1" required>
+                <form id="prediction-form" novalidate>
+                    <div class="form-section">
+                        <h4 class="section-title">Guest Information</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="guestName">Guest Name</label>
+                                <input type="text" id="guestName" name="guestName" required>
+                                <div class="error-message" id="guestName-error"></div>
+                            </div>
+                            <div class="form-group">
+                                <label for="guestEmail">Email Address</label>
+                                <input type="email" id="guestEmail" name="guestEmail" required>
+                                <div class="error-message" id="guestEmail-error"></div>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label for="noOfChildren">Number of Children</label>
-                            <input type="number" id="noOfChildren" name="noOfChildren" min="0" value="0" required>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="noOfWeekendNights">Weekend Nights</label>
-                            <input type="number" id="noOfWeekendNights" name="noOfWeekendNights" min="0" value="0"
-                                required>
-                        </div>
-                        <div class="form-group">
-                            <label for="noOfWeekNights">Week Nights</label>
-                            <input type="number" id="noOfWeekNights" name="noOfWeekNights" min="0" value="1" required>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="typeOfMealPlan">Meal Plan</label>
-                            <select id="typeOfMealPlan" name="typeOfMealPlan" required>
-                                <option value="Meal Plan 1">Meal Plan 1</option>
-                                <option value="Meal Plan 2">Meal Plan 2</option>
-                                <option value="Meal Plan 3">Meal Plan 3</option>
-                                <option value="No Meal Plan">No Meal Plan</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="roomTypeReserved">Room Type</label>
-                            <select id="roomTypeReserved" name="roomTypeReserved" required>
-                                <option value="Room_Type 1">Standard</option>
-                                <option value="Room_Type 2">Deluxe</option>
-                                <option value="Room_Type 3">Suite</option>
-                                <option value="Room_Type 4">Executive</option>
-                            </select>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="noOfAdults">Number of Adults</label>
+                                <input type="number" id="noOfAdults" name="noOfAdults" min="1" value="1" required>
+                                <div class="error-message" id="noOfAdults-error"></div>
+                            </div>
+                            <div class="form-group">
+                                <label for="noOfChildren">Number of Children</label>
+                                <input type="number" id="noOfChildren" name="noOfChildren" min="0" value="0" required>
+                                <div class="error-message" id="noOfChildren-error"></div>
+                            </div>
                         </div>
                     </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="leadTime">Lead Time (days)</label>
-                            <input type="number" id="leadTime" name="leadTime" min="0" value="30" required>
-                            <small>Days between booking and arrival</small>
+
+                    <div class="form-section">
+                        <h4 class="section-title">Stay Details</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="checkInDate">Check-in Date</label>
+                                <input type="date" id="checkInDate" name="checkInDate" required>
+                                <div class="error-message" id="checkInDate-error"></div>
+                            </div>
+                            <div class="form-group">
+                                <label for="checkOutDate">Check-out Date</label>
+                                <input type="date" id="checkOutDate" name="checkOutDate" required>
+                                <div class="error-message" id="checkOutDate-error"></div>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label for="avgPricePerRoom">Average Price Per Room</label>
-                            <input type="number" id="avgPricePerRoom" name="avgPricePerRoom" min="0" value="100"
-                                step="0.01" required>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="noOfWeekendNights">Weekend Nights</label>
+                                <input type="number" id="noOfWeekendNights" name="noOfWeekendNights" min="0" value="0"
+                                    readonly>
+                            </div>
+                            <div class="form-group">
+                                <label for="noOfWeekNights">Week Nights</label>
+                                <input type="number" id="noOfWeekNights" name="noOfWeekNights" min="0" value="1"
+                                    readonly>
+                            </div>
                         </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="marketSegmentType">Market Segment</label>
-                            <select id="marketSegmentType" name="marketSegmentType" required>
-                                <option value="Online">Online</option>
-                                <option value="Offline">Offline</option>
-                                <option value="Corporate">Corporate</option>
-                                <option value="Travel Agent">Travel Agent</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="noOfSpecialRequests">Number of Special Requests</label>
-                            <input type="number" id="noOfSpecialRequests" name="noOfSpecialRequests" min="0" value="0"
-                                required>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group checkbox-group">
-                            <input type="checkbox" id="requiredCarParkingSpace" name="requiredCarParkingSpace">
-                            <label for="requiredCarParkingSpace">Car Parking Required</label>
-                            <small>Does the guest need a parking space?</small>
-                        </div>
-                        <div class="form-group checkbox-group">
-                            <input type="checkbox" id="repeatedGuest" name="repeatedGuest">
-                            <label for="repeatedGuest">Repeated Guest</label>
-                            <small>Has the guest stayed before?</small>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="leadTime">Lead Time (days)</label>
+                                <input type="number" id="leadTime" name="leadTime" min="0" value="0" readonly>
+                                <small>Days between booking and arrival</small>
+                            </div>
                         </div>
                     </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="noOfPreviousCancellations">Previous Cancellations</label>
-                            <input type="number" id="noOfPreviousCancellations" name="noOfPreviousCancellations" min="0"
-                                value="0" required>
+
+                    <div class="form-section">
+                        <h4 class="section-title">Room & Services</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="roomTypeReserved">Room Type</label>
+                                <select id="roomTypeReserved" name="roomTypeReserved" required>
+                                    <option value="">Select room type</option>
+                                    <option value="Room_Type 1">Standard Room</option>
+                                    <option value="Room_Type 2">Deluxe Room</option>
+                                    <option value="Room_Type 3">Executive Suite</option>
+                                    <option value="Room_Type 4">Presidential Suite</option>
+                                </select>
+                                <div class="error-message" id="roomTypeReserved-error"></div>
+                            </div>
+                            <div class="form-group">
+                                <label for="avgPricePerRoom">Average Price Per Room ($)</label>
+                                <input type="number" id="avgPricePerRoom" name="avgPricePerRoom" min="0" step="0.01"
+                                    required>
+                                <div class="error-message" id="avgPricePerRoom-error"></div>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label for="noOfPreviousBookingsNotCanceled">Previous Bookings Not Canceled</label>
-                            <input type="number" id="noOfPreviousBookingsNotCanceled"
-                                name="noOfPreviousBookingsNotCanceled" min="0" value="0" required>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="typeOfMealPlan">Meal Plan</label>
+                                <select id="typeOfMealPlan" name="typeOfMealPlan" required>
+                                    <option value="">Select meal plan</option>
+                                    <option value="Meal Plan 1">Breakfast Only</option>
+                                    <option value="Meal Plan 2">Half Board</option>
+                                    <option value="Meal Plan 3">Full Board</option>
+                                    <option value="No Meal Plan">No Meals</option>
+                                </select>
+                                <div class="error-message" id="typeOfMealPlan-error"></div>
+                            </div>
+                            <div class="form-group checkbox-group">
+                                <input type="checkbox" id="requiredCarParkingSpace" name="requiredCarParkingSpace">
+                                <label for="requiredCarParkingSpace">Car Parking Required</label>
+                                <small>Additional $20 per night</small>
+                            </div>
                         </div>
                     </div>
-                    <button type="submit" class="btn-primary btn-full">Predict Cancellation</button>
+
+                    <div class="form-section">
+                        <h4 class="section-title">Booking Information</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="marketSegmentType">Market Segment</label>
+                                <select id="marketSegmentType" name="marketSegmentType" required>
+                                    <option value="">Select market segment</option>
+                                    <option value="Online">Online Travel Agency</option>
+                                    <option value="Offline">Direct Booking</option>
+                                    <option value="Corporate">Corporate</option>
+                                    <option value="Travel Agent">Travel Agent</option>
+                                    <option value="Group">Group</option>
+                                </select>
+                                <div class="error-message" id="marketSegmentType-error"></div>
+                            </div>
+                            <div class="form-group">
+                                <label for="noOfSpecialRequests">Special Requests</label>
+                                <input type="number" id="noOfSpecialRequests" name="noOfSpecialRequests" min="0" max="5"
+                                    value="0">
+                                <small>Number of special requests (0-5)</small>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group checkbox-group">
+                                <input type="checkbox" id="repeatedGuest" name="repeatedGuest">
+                                <label for="repeatedGuest">Repeat Guest</label>
+                                <small>Has stayed with us before</small>
+                            </div>
+                            <div class="form-group" id="previous-stays-group" style="display: none;">
+                                <label for="noOfPreviousBookingsNotCanceled">Previous Successful Stays</label>
+                                <input type="number" id="noOfPreviousBookingsNotCanceled"
+                                    name="noOfPreviousBookingsNotCanceled" min="0" value="0">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="noOfPreviousCancellations">Previous Cancellations</label>
+                                <input type="number" id="noOfPreviousCancellations" name="noOfPreviousCancellations"
+                                    min="0" value="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="depositType">Deposit Type</label>
+                                <select id="depositType" name="depositType">
+                                    <option value="No Deposit">No Deposit</option>
+                                    <option value="Non Refund">Non Refundable</option>
+                                    <option value="Refundable">Refundable</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="reset" class="btn-outline">Clear Form</button>
+                        <button type="submit" class="btn-primary" id="predict-btn">
+                            <i class="fas fa-robot"></i>
+                            Predict Cancellation
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>
@@ -154,7 +228,14 @@
                 </div>
             </div>
             <div class="result-footer">
-                <button class="btn-outline btn-full" disabled id="save-booking-btn">Save Booking</button>
+                <button class="btn-outline" id="save-draft-btn">
+                    <i class="fas fa-save"></i>
+                    Save Draft
+                </button>
+                <button class="btn-primary" id="confirm-booking-btn" disabled>
+                    <i class="fas fa-check-circle"></i>
+                    Confirm Booking
+                </button>
             </div>
         </div>
     </div>
@@ -164,57 +245,73 @@
 {% block scripts %}
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        // Form validation
         const form = document.getElementById('prediction-form');
+        const predictBtn = document.getElementById('predict-btn');
+        const confirmBtn = document.getElementById('confirm-booking-btn');
 
+        // Calculate lead time, weekend/week nights when dates change
+        document.getElementById('checkInDate').addEventListener('change', calculateStayDetails);
+        document.getElementById('checkOutDate').addEventListener('change', calculateStayDetails);
+
+        // Show/hide previous stays field based on repeat guest checkbox
+        document.getElementById('repeatedGuest').addEventListener('change', function () {
+            document.getElementById('previous-stays-group').style.display =
+                this.checked ? 'block' : 'none';
+        });
+
+        // Form submission for prediction
         form.addEventListener('submit', function (e) {
             e.preventDefault();
 
-            const submitBtn = form.querySelector('button[type="submit"]');
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+            if (validateForm()) {
+                predictBtn.disabled = true;
+                predictBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Predicting...';
 
-            // Convert form data to JSON
-            const formData = new FormData(form);
-            const data = {};
-            formData.forEach((value, key) => {
-                data[key] = value;
-            });
-
-            // Add checkbox values
-            data['requiredCarParkingSpace'] = document.getElementById('requiredCarParkingSpace').checked ? '1' : '0';
-            data['repeatedGuest'] = document.getElementById('repeatedGuest').checked ? '1' : '0';
-
-            // Send prediction request
-            fetch("{{ url_for('main.predict') }}", {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(data)
-            })
-                .then(response => response.json())
-                .then(result => {
-                    displayPredictionResult(result);
-                    document.getElementById('save-booking-btn').disabled = false;
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = 'Predict Cancellation';
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = 'Predict Cancellation';
+                const formData = new FormData(form);
+                const data = {};
+                formData.forEach((value, key) => {
+                    data[key] = value;
                 });
+
+                // Add checkbox values
+                data['requiredCarParkingSpace'] = document.getElementById('requiredCarParkingSpace').checked ? '1' : '0';
+                data['repeatedGuest'] = document.getElementById('repeatedGuest').checked ? '1' : '0';
+
+                // Send prediction request
+                axios.post("{{ url_for('main.predict') }}", data)
+                    .then(response => {
+                        displayPredictionResult(response.data);
+                        confirmBtn.disabled = false;
+                    })
+                    .catch(error => {
+                        console.error('Prediction error:', error);
+                        showError('Failed to get prediction. Please try again.');
+                    })
+                    .finally(() => {
+                        predictBtn.disabled = false;
+                        predictBtn.innerHTML = '<i class="fas fa-robot"></i> Predict Cancellation';
+                    });
+            }
         });
 
-        // Save booking button
-        document.getElementById('save-booking-btn').addEventListener('click', function () {
-            const formData = new FormData(document.getElementById('prediction-form'));
-            const data = {
-                booking_id: 'B' + Math.floor(1000 + Math.random() * 9000), // Temporary ID
-                guest_name: 'New Guest', // You should add a name field to your form
+        // Confirm booking button
+        confirmBtn.addEventListener('click', function () {
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            this.disabled = true;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+
+            const formData = new FormData(form);
+            const bookingData = {
+                guest_name: formData.get('guestName'),
+                guest_email: formData.get('guestEmail'),
                 room_type: formData.get('roomTypeReserved'),
-                check_in: new Date().toISOString().split('T')[0], // Today's date
-                check_out: new Date(Date.now() + 86400000 * parseInt(formData.get('noOfWeekNights'))).toISOString().split('T')[0],
+                check_in: formData.get('checkInDate'),
+                check_out: formData.get('checkOutDate'),
                 adults: formData.get('noOfAdults'),
                 children: formData.get('noOfChildren'),
                 weekend_nights: formData.get('noOfWeekendNights'),
@@ -227,59 +324,185 @@
                 previous_cancellations: formData.get('noOfPreviousCancellations'),
                 previous_bookings: formData.get('noOfPreviousBookingsNotCanceled'),
                 avg_price: formData.get('avgPricePerRoom'),
-                special_requests: formData.get('noOfSpecialRequests')
+                special_requests: formData.get('noOfSpecialRequests'),
+                deposit_type: formData.get('depositType')
             };
 
-            fetch("{{ url_for('main.create_booking') }}", {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(data)
-            })
-                .then(response => response.json())
-                .then(data => {
-                    alert('Booking saved successfully!');
-                    window.location.href = "{{ url_for('main.bookings') }}";
+            axios.post("{{ url_for('main.create_booking') }}", bookingData)
+                .then(response => {
+                    showSuccess('Booking confirmed successfully!');
+                    setTimeout(() => {
+                        window.location.href = "{{ url_for('main.bookings') }}";
+                    }, 1500);
                 })
                 .catch(error => {
-                    console.error('Error:', error);
-                    alert('Error saving booking');
+                    console.error('Booking error:', error);
+                    showError('Failed to confirm booking. Please try again.');
+                    this.disabled = false;
+                    this.innerHTML = '<i class="fas fa-check-circle"></i> Confirm Booking';
                 });
         });
 
+        // Calculate stay details (lead time, weekend nights, etc.)
+        function calculateStayDetails() {
+            const checkInDate = document.getElementById('checkInDate').value;
+            const checkOutDate = document.getElementById('checkOutDate').value;
+
+            if (checkInDate && checkOutDate) {
+                const checkIn = new Date(checkInDate);
+                const checkOut = new Date(checkOutDate);
+                const today = new Date();
+
+                // Calculate lead time (days until check-in)
+                const leadTime = Math.ceil((checkIn - today) / (1000 * 60 * 60 * 24));
+                document.getElementById('leadTime').value = leadTime > 0 ? leadTime : 0;
+
+                // Calculate total nights
+                const totalNights = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
+
+                // Calculate weekend nights (Friday and Saturday)
+                let weekendNights = 0;
+                let currentDate = new Date(checkIn);
+
+                for (let i = 0; i < totalNights; i++) {
+                    const day = currentDate.getDay(); // 0=Sun, 6=Sat
+                    if (day === 5 || day === 6) { // Friday or Saturday
+                        weekendNights++;
+                    }
+                    currentDate.setDate(currentDate.getDate() + 1);
+                }
+
+                document.getElementById('noOfWeekendNights').value = weekendNights;
+                document.getElementById('noOfWeekNights').value = totalNights - weekendNights;
+            }
+        }
+
+        // Validate form
+        function validateForm() {
+            let isValid = true;
+
+            // Reset error messages
+            document.querySelectorAll('.error-message').forEach(el => {
+                el.textContent = '';
+            });
+
+            // Validate required fields
+            const requiredFields = [
+                'guestName', 'guestEmail', 'noOfAdults', 'noOfChildren',
+                'checkInDate', 'checkOutDate', 'roomTypeReserved',
+                'avgPricePerRoom', 'typeOfMealPlan', 'marketSegmentType'
+            ];
+
+            requiredFields.forEach(fieldId => {
+                const field = document.getElementById(fieldId);
+                if (!field.value.trim()) {
+                    document.getElementById(`${fieldId}-error`).textContent = 'This field is required';
+                    isValid = false;
+                }
+            });
+
+            // Validate email format
+            const email = document.getElementById('guestEmail').value;
+            if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                document.getElementById('guestEmail-error').textContent = 'Please enter a valid email';
+                isValid = false;
+            }
+
+            // Validate check-out date is after check-in
+            const checkIn = document.getElementById('checkInDate').value;
+            const checkOut = document.getElementById('checkOutDate').value;
+            if (checkIn && checkOut && new Date(checkOut) <= new Date(checkIn)) {
+                document.getElementById('checkOutDate-error').textContent = 'Check-out must be after check-in';
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        // Display prediction result
         function displayPredictionResult(prediction) {
             const resultContainer = document.getElementById('prediction-result');
-            const alertClass = prediction.risk === 'high' ? 'danger' :
-                prediction.risk === 'medium' ? 'warning' : 'success';
-
-            const alertIcon = prediction.risk === 'high' ? 'fa-times-circle' :
-                prediction.risk === 'medium' ? 'fa-exclamation-circle' : 'fa-check-circle';
-
-            const alertTitle = prediction.prediction === 'Cancelled' ?
-                'Likely to Cancel' : 'Likely to Keep Reservation';
+            const riskLevel = prediction.risk.toLowerCase();
+            const predictionText = prediction.prediction === 'Cancelled' ?
+                'likely to cancel' : 'likely to honor the reservation';
 
             resultContainer.innerHTML = `
-                <div class="prediction-alert ${alertClass}">
-                    <i class="fas ${alertIcon}"></i>
-                    <div class="prediction-alert-content">
-                        <h4>${alertTitle}</h4>
-                        <p>Our model predicts this booking will ${prediction.prediction === 'Cancelled' ? 'be cancelled' : 'not be cancelled'} with ${Math.round(prediction.probability * 100)}% confidence.</p>
+                <div class="prediction-alert ${riskLevel}">
+                    <div class="prediction-header">
+                        <i class="fas ${getRiskIcon(riskLevel)}"></i>
+                        <h4>${prediction.prediction === 'Cancelled' ? 'High Cancellation Risk' : 'Low Cancellation Risk'}</h4>
+                    </div>
+                    <div class="prediction-content">
+                        <div class="probability-meter">
+                            <div class="probability-bar" style="width: ${prediction.probability * 100}%"></div>
+                            <span>${Math.round(prediction.probability * 100)}% probability</span>
+                        </div>
+                        <p>Our AI model predicts this booking is <strong>${predictionText}</strong>.</p>
+                        <div class="risk-assessment">
+                            <h5>Risk Assessment: <span class="risk-level ${riskLevel}">${riskLevel}</span></h5>
+                            <p>${getRiskDescription(riskLevel)}</p>
+                        </div>
+                        <div class="key-factors">
+                            <h5>Key Contributing Factors:</h5>
+                            <ul>
+                                ${prediction.key_factors.map(factor => `
+                                    <li>
+                                        <span class="factor-name">${factor.name}:</span>
+                                        <span class="factor-impact ${factor.impact}">
+                                            ${factor.impact} impact
+                                        </span>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        </div>
                     </div>
                 </div>
-                <div class="prediction-section">
-                    <h4>Risk Assessment</h4>
-                    <div class="risk-indicator">
-                        <i class="fas ${alertIcon} ${prediction.risk}"></i>
-                        <span>${prediction.risk.charAt(0).toUpperCase() + prediction.risk.slice(1)} Risk</span>
-                    </div>
-                    <p>${prediction.risk === 'high'
-                    ? 'This booking has a high risk of cancellation. Consider overbooking or requiring a deposit.'
-                    : prediction.risk === 'medium'
-                        ? 'This booking has a moderate risk of cancellation. Monitor closely as the check-in date approaches.'
-                        : 'This booking has a low risk of cancellation. No special action required.'}</p>
+                <div class="recommendations">
+                    <h4>Recommendations</h4>
+                    <ul>
+                        ${prediction.recommendations.map(rec => `<li>${rec}</li>`).join('')}
+                    </ul>
                 </div>
             `;
+        }
+
+        // Helper functions
+        function getRiskIcon(riskLevel) {
+            return {
+                'high': 'fa-exclamation-triangle',
+                'medium': 'fa-exclamation-circle',
+                'low': 'fa-check-circle'
+            }[riskLevel] || 'fa-info-circle';
+        }
+
+        function getRiskDescription(riskLevel) {
+            return {
+                'high': 'This booking has a high risk of cancellation. Consider requiring a deposit or offering incentives to secure the booking.',
+                'medium': 'This booking has a moderate risk of cancellation. Monitor closely and consider sending reminders as the check-in date approaches.',
+                'low': 'This booking has a low risk of cancellation. Standard procedures are sufficient.'
+            }[riskLevel] || 'Risk assessment not available.';
+        }
+
+        function showError(message) {
+            const alert = document.createElement('div');
+            alert.className = 'alert alert-error';
+            alert.innerHTML = `
+                <i class="fas fa-exclamation-circle"></i>
+                <span>${message}</span>
+            `;
+            document.querySelector('.main-content').prepend(alert);
+            setTimeout(() => alert.remove(), 5000);
+        }
+
+        function showSuccess(message) {
+            const alert = document.createElement('div');
+            alert.className = 'alert alert-success';
+            alert.innerHTML = `
+                <i class="fas fa-check-circle"></i>
+                <span>${message}</span>
+            `;
+            document.querySelector('.main-content').prepend(alert);
+            setTimeout(() => alert.remove(), 5000);
         }
     });
 </script>

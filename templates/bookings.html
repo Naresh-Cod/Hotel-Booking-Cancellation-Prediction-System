@@ -1,5 +1,9 @@
 {% extends "base.html" %}
-{% block title %}Bookings - Hotel Booking{% endblock %}
+{% block title %}Bookings - HotelPredict Pro{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/bookings.css') }}">
+{% endblock %}
 
 {% block content %}
 <header class="top-nav">
@@ -8,18 +12,18 @@
     </div>
     <div class="search-bar">
         <i class="fas fa-search"></i>
-        <input type="text" placeholder="Search...">
+        <input type="text" placeholder="Search bookings...">
     </div>
     <div class="top-nav-right">
-        <div class="theme-toggle">
+        <div class="theme-toggle" id="theme-toggle">
             <i class="fas fa-moon"></i>
         </div>
         <div class="notifications">
             <i class="fas fa-bell"></i>
-            <span class="badge">3</span>
+            <span class="badge">{{ unread_notifications }}</span>
         </div>
         <div class="user-dropdown">
-            <img src="{{ url_for('static', filename='images/user.png') }}" alt="User Avatar">
+            <img src="{{ url_for('static', filename='images/user-avatar.png') }}" alt="User Avatar">
             <i class="fas fa-chevron-down"></i>
         </div>
     </div>
@@ -27,54 +31,92 @@
 
 <div class="page-content active" id="bookings-page">
     <div class="page-header">
-        <h1>Bookings</h1>
-        <button class="btn-primary" id="new-booking-btn">
-            <i class="fas fa-plus"></i>
-            New Booking
-        </button>
+        <h1>Bookings Management</h1>
+        <nav class="breadcrumbs">
+            <a href="{{ url_for('main.dashboard') }}">Dashboard</a>
+            <i class="fas fa-chevron-right"></i>
+            <span>Bookings</span>
+        </nav>
     </div>
 
-    <!-- Bookings Filter (Added from additional HTML) -->
+    <!-- Bookings Filter -->
     <div class="filter-card">
         <div class="filter-row">
             <div class="filter-group">
                 <label>Search</label>
                 <div class="input-with-icon">
                     <i class="fas fa-search"></i>
-                    <input type="text" placeholder="Search bookings...">
+                    <input type="text" id="search-bookings" placeholder="Guest name, booking ID...">
                 </div>
             </div>
             <div class="filter-group">
                 <label>Status</label>
-                <select>
-                    <option>All Statuses</option>
-                    <option>Confirmed</option>
-                    <option>Cancelled</option>
-                    <option>Checked In</option>
-                    <option>Checked Out</option>
+                <select id="status-filter">
+                    <option value="">All Statuses</option>
+                    <option value="confirmed">Confirmed</option>
+                    <option value="cancelled">Cancelled</option>
+                    <option value="checked_in">Checked In</option>
+                    <option value="checked_out">Checked Out</option>
+                    <option value="no_show">No Show</option>
                 </select>
             </div>
             <div class="filter-group">
                 <label>Room Type</label>
-                <select>
-                    <option>All Room Types</option>
-                    <option>Standard</option>
-                    <option>Deluxe</option>
-                    <option>Suite</option>
-                    <option>Executive</option>
+                <select id="room-type-filter">
+                    <option value="">All Room Types</option>
+                    <option value="standard">Standard</option>
+                    <option value="deluxe">Deluxe</option>
+                    <option value="executive">Executive Suite</option>
+                    <option value="presidential">Presidential Suite</option>
                 </select>
             </div>
             <div class="filter-group">
-                <label>Date Range</label>
-                <div class="input-with-icon">
-                    <i class="fas fa-calendar"></i>
-                    <input type="text" placeholder="Select date range">
-                </div>
+                <label>Risk Level</label>
+                <select id="risk-filter">
+                    <option value="">All Risk Levels</option>
+                    <option value="high">High</option>
+                    <option value="medium">Medium</option>
+                    <option value="low">Low</option>
+                </select>
             </div>
         </div>
-        <div class="filter-actions">
-            <button class="btn-outline">Reset</button>
-            <button class="btn-primary">Apply Filters</button>
+        <div class="filter-row">
+            <div class="filter-group">
+                <label>Date Range</label>
+                <div class="date-range-picker">
+                    <input type="date" id="start-date" placeholder="Start date">
+                    <span>to</span>
+                    <input type="date" id="end-date" placeholder="End date">
+                </div>
+            </div>
+            <div class="filter-group">
+                <label>Sort By</label>
+                <select id="sort-by">
+                    <option value="check_in">Check-in Date</option>
+                    <option value="created_at">Booking Date</option>
+                    <option value="risk_score">Risk Score</option>
+                    <option value="guest_name">Guest Name</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Items Per Page</label>
+                <select id="items-per-page">
+                    <option value="10">10</option>
+                    <option value="25" selected>25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </select>
+            </div>
+            <div class="filter-actions">
+                <button class="btn-outline" id="reset-filters">
+                    <i class="fas fa-undo"></i>
+                    Reset
+                </button>
+                <button class="btn-primary" id="apply-filters">
+                    <i class="fas fa-filter"></i>
+                    Apply Filters
+                </button>
+            </div>
         </div>
     </div>
 
@@ -83,50 +125,105 @@
         <div class="table-header">
             <h3>All Bookings</h3>
             <div class="table-actions">
-                <button class="btn-outline">
+                <button class="btn-outline" id="export-bookings">
                     <i class="fas fa-file-export"></i>
                     Export
                 </button>
-                <button class="btn-outline">
-                    <i class="fas fa-file-import"></i>
-                    Import
+                <button class="btn-primary" id="new-booking-btn">
+                    <i class="fas fa-plus"></i>
+                    New Booking
                 </button>
             </div>
         </div>
         <div class="table-container">
-            <table class="data-table">
+            <table class="data-table" id="bookings-table">
                 <thead>
                     <tr>
+                        <th class="select-column">
+                            <input type="checkbox" id="select-all">
+                        </th>
                         <th>Booking ID</th>
-                        <th>Guest Name</th>
+                        <th>Guest</th>
                         <th>Room Type</th>
                         <th>Check-in</th>
                         <th>Check-out</th>
                         <th>Status</th>
-                        <th>Cancellation Risk</th>
+                        <th>Risk</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for booking in bookings %}
-                    <tr>
+                    <tr data-booking-id="{{ booking.id }}" data-risk-level="{{ booking.risk_level }}"
+                        data-status="{{ booking.status }}">
+                        <td class="select-column">
+                            <input type="checkbox" class="booking-checkbox" value="{{ booking.id }}">
+                        </td>
                         <td>{{ booking.booking_id }}</td>
-                        <td>{{ booking.guest_name }}</td>
-                        <td>{{ booking.room_type }}</td>
-                        <td>{{ booking.check_in.strftime('%Y-%m-%d') }}</td>
-                        <td>{{ booking.check_out.strftime('%Y-%m-%d') }}</td>
                         <td>
-                            <span
-                                class="status-badge {% if booking.status == 'Confirmed' %}confirmed{% elif booking.status == 'Cancelled' %}cancelled{% endif %}">
-                                {{ booking.status }}
+                            <div class="guest-info">
+                                <div class="guest-name">{{ booking.guest_name }}</div>
+                                <div class="guest-email">{{ booking.guest_email }}</div>
+                            </div>
+                        </td>
+                        <td>{{ booking.room_type }}</td>
+                        <td>
+                            <div class="date-cell">
+                                <div class="date">{{ booking.check_in.strftime('%b %d, %Y') }}</div>
+                                <div class="days-away">{{ booking.days_until_check_in }} days</div>
+                            </div>
+                        </td>
+                        <td>{{ booking.check_out.strftime('%b %d, %Y') }}</td>
+                        <td>
+                            <span class="status-badge {{ booking.status|lower }}">
+                                {{ booking.status|replace('_', ' ')|title }}
                             </span>
                         </td>
-                        <td><span class="risk-badge medium">Medium</span></td>
+                        <td>
+                            <div class="risk-indicator">
+                                <div class="risk-meter" data-risk="{{ booking.risk_level }}">
+                                    <div class="risk-level" style="width: {{ booking.cancellation_probability }}%">
+                                    </div>
+                                </div>
+                                <span class="risk-value">{{ booking.cancellation_probability|round(1) }}%</span>
+                            </div>
+                        </td>
                         <td>
                             <div class="table-actions">
-                                <button class="btn-icon"><i class="fas fa-eye"></i></button>
-                                <button class="btn-icon"><i class="fas fa-edit"></i></button>
-                                <button class="btn-icon"><i class="fas fa-trash"></i></button>
+                                <button class="btn-icon view-booking" data-id="{{ booking.id }}">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn-icon edit-booking" data-id="{{ booking.id }}">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <div class="dropdown">
+                                    <button class="btn-icon dropdown-toggle">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    <div class="dropdown-menu">
+                                        {% if booking.status == 'confirmed' %}
+                                        <button class="dropdown-item send-reminder" data-id="{{ booking.id }}">
+                                            <i class="fas fa-envelope"></i> Send Reminder
+                                        </button>
+                                        <button class="dropdown-item offer-upgrade" data-id="{{ booking.id }}">
+                                            <i class="fas fa-gift"></i> Offer Upgrade
+                                        </button>
+                                        <button class="dropdown-item mark-checked-in" data-id="{{ booking.id }}">
+                                            <i class="fas fa-door-open"></i> Check In
+                                        </button>
+                                        <button class="dropdown-item cancel-booking" data-id="{{ booking.id }}">
+                                            <i class="fas fa-times"></i> Cancel
+                                        </button>
+                                        {% elif booking.status == 'checked_in' %}
+                                        <button class="dropdown-item mark-checked-out" data-id="{{ booking.id }}">
+                                            <i class="fas fa-door-closed"></i> Check Out
+                                        </button>
+                                        {% endif %}
+                                        <button class="dropdown-item delete-booking" data-id="{{ booking.id }}">
+                                            <i class="fas fa-trash"></i> Delete
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </td>
                     </tr>
@@ -134,26 +231,47 @@
                 </tbody>
             </table>
         </div>
-        <div class="table-footer">
-            <div class="pagination">
-                <button class="btn-icon"><i class="fas fa-chevron-left"></i></button>
-                <button class="page-number active">1</button>
-                <button class="page-number">2</button>
-                <button class="page-number">3</button>
-                <span>...</span>
-                <button class="page-number">10</button>
-                <button class="btn-icon"><i class="fas fa-chevron-right"></i></button>
-            </div>
-            <div class="items-per-page">
-                <span>Show</span>
-                <select>
-                    <option>5</option>
-                    <option selected>10</option>
-                    <option>25</option>
-                    <option>50</option>
-                </select>
-                <span>items per page</span>
-            </div>
+
+    </div>
+
+    <!-- Bulk Actions Panel (shown when bookings are selected) -->
+    <div class="bulk-actions-panel" id="bulk-actions">
+        <div class="bulk-actions-header">
+            <span id="selected-count">0</span> bookings selected
+            <button class="btn-icon" id="clear-selection">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="bulk-actions-body">
+            <select id="bulk-action-select">
+                <option value="">Choose action...</option>
+                <option value="send_reminder">Send Reminder</option>
+                <option value="offer_upgrade">Offer Upgrade</option>
+                <option value="cancel">Cancel Bookings</option>
+                <option value="delete">Delete Bookings</option>
+            </select>
+            <button class="btn-outline" id="apply-bulk-action" disabled>
+                Apply
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Booking Detail Modal -->
+<div class="modal" id="booking-detail-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Booking Details</h3>
+            <button class="btn-icon close-modal">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body" id="booking-detail-content">
+            <!-- Content loaded via AJAX -->
+        </div>
+        <div class="modal-footer">
+            <button class="btn-outline close-modal">Close</button>
+            <button class="btn-primary" id="save-booking-changes">Save Changes</button>
         </div>
     </div>
 </div>
@@ -161,8 +279,408 @@
 
 {% block scripts %}
 <script>
-    document.getElementById('new-booking-btn').addEventListener('click', function () {
-        window.location.href = "{{ url_for('main.predict') }}";
+    document.addEventListener('DOMContentLoaded', function () {
+        // Initialize DataTable
+        const bookingsTable = $('#bookings-table').DataTable({
+            dom: '<"top"f>rt<"bottom"lip><"clear">',
+            pageLength: 25,
+            lengthMenu: [10, 25, 50, 100],
+            order: [[4, 'asc']], // Default sort by check-in date
+            columnDefs: [
+                { orderable: false, targets: [0, 8] }, // Disable sorting for select and actions columns
+                { className: 'dt-center', targets: [0, 6, 7, 8] }, // Center align these columns
+                { width: '40px', targets: 0 }, // Select column width
+                { width: '120px', targets: 8 } // Actions column width
+            ],
+            language: {
+                search: '',
+                searchPlaceholder: 'Search bookings...',
+                lengthMenu: 'Show _MENU_ bookings',
+                info: 'Showing _START_ to _END_ of _TOTAL_ bookings',
+                infoEmpty: 'No bookings to show',
+                paginate: {
+                    first: '<i class="fas fa-angle-double-left"></i>',
+                    previous: '<i class="fas fa-angle-left"></i>',
+                    next: '<i class="fas fa-angle-right"></i>',
+                    last: '<i class="fas fa-angle-double-right"></i>'
+                }
+            },
+            initComplete: function () {
+                // Add custom search input
+                $('.dataTables_filter input').addClass('form-control');
+                $('.dataTables_length select').addClass('form-control');
+            }
+        });
+
+        // New booking button
+        document.getElementById('new-booking-btn').addEventListener('click', function () {
+            window.location.href = "{{ url_for('main.predict') }}";
+        });
+
+        // View booking details
+        document.querySelectorAll('.view-booking').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const bookingId = this.getAttribute('data-id');
+                fetchBookingDetails(bookingId);
+            });
+        });
+
+        // Edit booking
+        document.querySelectorAll('.edit-booking').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const bookingId = this.getAttribute('data-id');
+                editBooking(bookingId);
+            });
+        });
+
+        // Bulk actions
+        document.getElementById('select-all').addEventListener('change', function () {
+            const isChecked = this.checked;
+            document.querySelectorAll('.booking-checkbox').forEach(checkbox => {
+                checkbox.checked = isChecked;
+            });
+            updateSelectedCount();
+        });
+
+        document.querySelectorAll('.booking-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', updateSelectedCount);
+        });
+
+        function updateSelectedCount() {
+            const selectedCount = document.querySelectorAll('.booking-checkbox:checked').length;
+            document.getElementById('selected-count').textContent = selectedCount;
+
+            const bulkActionsPanel = document.getElementById('bulk-actions');
+            if (selectedCount > 0) {
+                bulkActionsPanel.style.display = 'block';
+                document.getElementById('apply-bulk-action').disabled = false;
+            } else {
+                bulkActionsPanel.style.display = 'none';
+                document.getElementById('apply-bulk-action').disabled = true;
+            }
+        }
+
+        document.getElementById('clear-selection').addEventListener('click', function () {
+            document.querySelectorAll('.booking-checkbox').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            document.getElementById('select-all').checked = false;
+            updateSelectedCount();
+        });
+
+        document.getElementById('apply-bulk-action').addEventListener('click', function () {
+            const action = document.getElementById('bulk-action-select').value;
+            if (!action) return;
+
+            const selectedIds = Array.from(document.querySelectorAll('.booking-checkbox:checked'))
+                .map(checkbox => checkbox.value);
+
+            if (selectedIds.length === 0) return;
+
+            performBulkAction(action, selectedIds);
+        });
+
+        // Filter functionality
+        document.getElementById('apply-filters').addEventListener('click', applyFilters);
+        document.getElementById('reset-filters').addEventListener('click', resetFilters);
+
+        function applyFilters() {
+            const status = document.getElementById('status-filter').value;
+            const roomType = document.getElementById('room-type-filter').value;
+            const riskLevel = document.getElementById('risk-filter').value;
+            const startDate = document.getElementById('start-date').value;
+            const endDate = document.getElementById('end-date').value;
+            const sortBy = document.getElementById('sort-by').value;
+            const itemsPerPage = document.getElementById('items-per-page').value;
+
+            // Apply filters to DataTable
+            bookingsTable.page.len(itemsPerPage).draw();
+
+            // You would typically make an AJAX call here to fetch filtered data
+            // For this example, we'll just filter the existing table client-side
+
+            // Show loading state
+            const tableBody = document.querySelector('#bookings-table tbody');
+            tableBody.innerHTML = '<tr><td colspan="9" class="loading">Loading bookings...</td></tr>';
+
+            // Simulate API call
+            setTimeout(() => {
+                fetchFilteredBookings({
+                    status, roomType, riskLevel,
+                    startDate, endDate, sortBy,
+                    itemsPerPage, page: 1
+                });
+            }, 500);
+        }
+
+        function resetFilters() {
+            document.getElementById('status-filter').value = '';
+            document.getElementById('room-type-filter').value = '';
+            document.getElementById('risk-filter').value = '';
+            document.getElementById('start-date').value = '';
+            document.getElementById('end-date').value = '';
+            document.getElementById('sort-by').value = 'check_in';
+            document.getElementById('items-per-page').value = '25';
+
+            // Reset table to initial state
+            bookingsTable.search('').columns().search('').draw();
+        }
+
+        // Pagination controls
+        document.getElementById('first-page').addEventListener('click', function () {
+            bookingsTable.page('first').draw('page');
+        });
+
+        document.getElementById('prev-page').addEventListener('click', function () {
+            bookingsTable.page('previous').draw('page');
+        });
+
+        document.getElementById('next-page').addEventListener('click', function () {
+            bookingsTable.page('next').draw('page');
+        });
+
+        document.getElementById('last-page').addEventListener('click', function () {
+            bookingsTable.page('last').draw('page');
+        });
+
+        // Update pagination controls when table redraws
+        bookingsTable.on('draw', function () {
+            const info = bookingsTable.page.info();
+            document.querySelector('.page-info').textContent =
+                `Page ${info.page + 1} of ${info.pages}`;
+
+            document.getElementById('first-page').disabled = info.page === 0;
+            document.getElementById('prev-page').disabled = info.page === 0;
+            document.getElementById('next-page').disabled = info.page === info.pages - 1;
+            document.getElementById('last-page').disabled = info.page === info.pages - 1;
+
+            document.getElementById('showing-count').textContent =
+                info.recordsDisplay;
+        });
+
+        // Modal functionality
+        function openModal() {
+            document.getElementById('booking-detail-modal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            document.getElementById('booking-detail-modal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        document.querySelectorAll('.close-modal').forEach(btn => {
+            btn.addEventListener('click', closeModal);
+        });
+
+        // Close modal when clicking outside
+        window.addEventListener('click', function (event) {
+            if (event.target === document.getElementById('booking-detail-modal')) {
+                closeModal();
+            }
+        });
+
+        // API functions
+        function fetchBookingDetails(bookingId) {
+            // Show loading state
+            document.getElementById('booking-detail-content').innerHTML =
+                '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading booking details...</div>';
+
+            openModal();
+
+            // Simulate API call
+            setTimeout(() => {
+                axios.get(`/api/bookings/${bookingId}`)
+                    .then(response => {
+                        displayBookingDetails(response.data);
+                    })
+                    .catch(error => {
+                        console.error('Error fetching booking details:', error);
+                        document.getElementById('booking-detail-content').innerHTML =
+                            '<div class="error">Failed to load booking details. Please try again.</div>';
+                    });
+            }, 500);
+        }
+
+        function displayBookingDetails(booking) {
+            const content = `
+                <div class="booking-detail-section">
+                    <h4>Guest Information</h4>
+                    <div class="detail-row">
+                        <div class="detail-group">
+                            <label>Name</label>
+                            <p>${booking.guest_name}</p>
+                        </div>
+                        <div class="detail-group">
+                            <label>Email</label>
+                            <p>${booking.guest_email}</p>
+                        </div>
+                        <div class="detail-group">
+                            <label>Phone</label>
+                            <p>${booking.guest_phone || 'N/A'}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="booking-detail-section">
+                    <h4>Stay Details</h4>
+                    <div class="detail-row">
+                        <div class="detail-group">
+                            <label>Check-in</label>
+                            <p>${new Date(booking.check_in).toLocaleDateString()} (${booking.days_until_check_in} days)</p>
+                        </div>
+                        <div class="detail-group">
+                            <label>Check-out</label>
+                            <p>${new Date(booking.check_out).toLocaleDateString()}</p>
+                        </div>
+                        <div class="detail-group">
+                            <label>Nights</label>
+                            <p>${booking.total_nights}</p>
+                        </div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-group">
+                            <label>Room Type</label>
+                            <p>${booking.room_type}</p>
+                        </div>
+                        <div class="detail-group">
+                            <label>Adults/Children</label>
+                            <p>${booking.adults} / ${booking.children}</p>
+                        </div>
+                        <div class="detail-group">
+                            <label>Total Cost</label>
+                            <p>$${booking.total_cost.toFixed(2)}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="booking-detail-section">
+                    <h4>Booking Information</h4>
+                    <div class="detail-row">
+                        <div class="detail-group">
+                            <label>Status</label>
+                            <span class="status-badge ${booking.status.toLowerCase()}">
+                                ${booking.status.replace('_', ' ').toUpperCase()}
+                            </span>
+                        </div>
+                        <div class="detail-group">
+                            <label>Booking Date</label>
+                            <p>${new Date(booking.created_at).toLocaleDateString()}</p>
+                        </div>
+                        <div class="detail-group">
+                            <label>Lead Time</label>
+                            <p>${booking.lead_time} days</p>
+                        </div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-group">
+                            <label>Market Segment</label>
+                            <p>${booking.market_segment}</p>
+                        </div>
+                        <div class="detail-group">
+                            <label>Meal Plan</label>
+                            <p>${booking.meal_plan}</p>
+                        </div>
+                        <div class="detail-group">
+                            <label>Special Requests</label>
+                            <p>${booking.special_requests || 'None'}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="booking-detail-section">
+                    <h4>Cancellation Risk Analysis</h4>
+                    <div class="risk-analysis">
+                        <div class="risk-meter-large">
+                            <div class="risk-level" style="width: ${booking.cancellation_probability}%"></div>
+                            <span class="risk-value">${booking.cancellation_probability.toFixed(1)}%</span>
+                        </div>
+                        <div class="risk-assessment">
+                            <h5>Risk Level: <span class="risk-level ${booking.risk_level}">${booking.risk_level.toUpperCase()}</span></h5>
+                            <p>${getRiskDescription(booking.risk_level)}</p>
+                        </div>
+                    </div>
+                    <div class="key-factors">
+                        <h5>Key Contributing Factors:</h5>
+                        <ul>
+                            ${booking.key_factors.map(factor => `
+                                <li>
+                                    <span class="factor-name">${factor.name}:</span>
+                                    <span class="factor-impact ${factor.impact}">
+                                        ${factor.impact} impact
+                                    </span>
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="booking-detail-section">
+                    <h4>Actions</h4>
+                    <div class="action-buttons">
+                        ${booking.status === 'confirmed' ? `
+                            <button class="btn-outline send-reminder" data-id="${booking.id}">
+                                <i class="fas fa-envelope"></i> Send Reminder
+                            </button>
+                            <button class="btn-outline offer-upgrade" data-id="${booking.id}">
+                                <i class="fas fa-gift"></i> Offer Upgrade
+                            </button>
+                            <button class="btn-outline mark-checked-in" data-id="${booking.id}">
+                                <i class="fas fa-door-open"></i> Check In
+                            </button>
+                            <button class="btn-outline cancel-booking" data-id="${booking.id}">
+                                <i class="fas fa-times"></i> Cancel
+                            </button>
+                        ` : booking.status === 'checked_in' ? `
+                            <button class="btn-outline mark-checked-out" data-id="${booking.id}">
+                                <i class="fas fa-door-closed"></i> Check Out
+                            </button>
+                        ` : ''}
+                        <button class="btn-outline delete-booking" data-id="${booking.id}">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('booking-detail-content').innerHTML = content;
+
+            // Add event listeners to action buttons in modal
+            document.querySelectorAll('#booking-detail-content .send-reminder').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    sendReminder(this.getAttribute('data-id'));
+                });
+            });
+
+            // Add similar listeners for other actions...
+        }
+
+        function getRiskDescription(riskLevel) {
+            return {
+                'high': 'This booking has a high risk of cancellation. Consider proactive measures like requiring a deposit or offering incentives to secure the booking.',
+                'medium': 'This booking has a moderate risk of cancellation. Monitor closely and consider sending reminders as the check-in date approaches.',
+                'low': 'This booking has a low risk of cancellation. Standard procedures are sufficient.'
+            }[riskLevel.toLowerCase()] || 'Risk assessment not available.';
+        }
+
+        function fetchFilteredBookings(params) {
+            // Implementation would make an API call to fetch filtered bookings
+            // and update the table with the response data
+        }
+
+        function performBulkAction(action, bookingIds) {
+            // Implementation would handle the bulk action (send reminders, cancel bookings, etc.)
+        }
+
+        function editBooking(bookingId) {
+            // Implementation would load the booking in an editable form
+        }
+
+        function sendReminder(bookingId) {
+            // Implementation would send a reminder email to the guest
+        }
+
+        // Other action functions would be defined here...
     });
 </script>
 {% endblock %}

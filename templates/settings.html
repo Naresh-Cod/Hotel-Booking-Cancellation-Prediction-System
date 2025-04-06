@@ -1,40 +1,604 @@
 {% extends "base.html" %}
-{% block title %}Settings - Hotel Booking{% endblock %}
+{% block title %}Settings - HotelPredict Pro{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/settings.css') }}">
+{% endblock %}
+
 {% block content %}
 <header class="top-nav">
-    <div class="menu-toggle"><i class="fas fa-bars"></i></div>
-    <div class="search-bar"><i class="fas fa-search"></i><input type="text" placeholder="Search..."></div>
+    <div class="menu-toggle">
+        <i class="fas fa-bars"></i>
+    </div>
+    <div class="search-bar">
+        <i class="fas fa-search"></i>
+        <input type="text" placeholder="Search settings...">
+    </div>
     <div class="top-nav-right">
-        <div class="theme-toggle"><i class="fas fa-moon"></i></div>
-        <div class="notifications"><i class="fas fa-bell"></i><span class="badge">3</span></div>
+        <div class="theme-toggle" id="theme-toggle">
+            <i class="fas fa-moon"></i>
+        </div>
+        <div class="notifications">
+            <i class="fas fa-bell"></i>
+            <span class="badge">{{ unread_notifications }}</span>
+        </div>
         <div class="user-dropdown">
-            <img src="{{ url_for('static', filename='images/user.png') }}" alt="User Avatar">
+            <img src="{{ url_for('static', filename='images/user-avatar.png') }}" alt="User Avatar">
             <i class="fas fa-chevron-down"></i>
         </div>
     </div>
 </header>
+
 <div class="page-content active" id="settings-page">
     <div class="page-header">
-        <h1>Settings</h1>
+        <h1>System Settings</h1>
+        <nav class="breadcrumbs">
+            <a href="{{ url_for('main.dashboard') }}">Dashboard</a>
+            <i class="fas fa-chevron-right"></i>
+            <span>Settings</span>
+        </nav>
     </div>
+
     <div class="settings-container">
         <div class="settings-sidebar">
             <ul class="settings-nav">
-                <li class="active"><a href="#general-settings">General</a></li>
+                <li class="active" data-section="general">
+                    <a href="#general">
+                        <i class="fas fa-cog"></i>
+                        <span>General</span>
+                    </a>
+                </li>
+                <li data-section="notifications">
+                    <a href="#notifications">
+                        <i class="fas fa-bell"></i>
+                        <span>Notifications</span>
+                    </a>
+                </li>
+                <li data-section="model">
+                    <a href="#model">
+                        <i class="fas fa-robot"></i>
+                        <span>Prediction Model</span>
+                    </a>
+                </li>
+                <li data-section="integrations">
+                    <a href="#integrations">
+                        <i class="fas fa-plug"></i>
+                        <span>Integrations</span>
+                    </a>
+                </li>
+                <li data-section="users">
+                    <a href="#users">
+                        <i class="fas fa-users"></i>
+                        <span>Users & Permissions</span>
+                    </a>
+                </li>
+                <li data-section="backup">
+                    <a href="#backup">
+                        <i class="fas fa-database"></i>
+                        <span>Backup & Restore</span>
+                    </a>
+                </li>
+                <li data-section="advanced">
+                    <a href="#advanced">
+                        <i class="fas fa-code"></i>
+                        <span>Advanced</span>
+                    </a>
+                </li>
             </ul>
         </div>
+
         <div class="settings-content">
+            <!-- General Settings -->
             <div class="settings-section active" id="general-settings">
                 <h2>General Settings</h2>
-                <form class="settings-form">
-                    <div class="form-group">
-                        <label>Hotel Name</label>
-                        <input type="text" value="Grand Hotel">
+                <form class="settings-form" id="general-settings-form">
+                    <div class="form-section">
+                        <h3 class="section-title">Hotel Information</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="hotel-name">Hotel Name</label>
+                                <input type="text" id="hotel-name" name="hotel_name" value="{{ settings.hotel_name }}"
+                                    required>
+                            </div>
+                            <div class="form-group">
+                                <label for="hotel-logo">Hotel Logo</label>
+                                <div class="file-upload">
+                                    <input type="file" id="hotel-logo" name="hotel_logo" accept="image/*">
+                                    <label for="hotel-logo" class="btn-outline">
+                                        <i class="fas fa-upload"></i> Upload Logo
+                                    </label>
+                                    {% if settings.hotel_logo %}
+                                    <div class="logo-preview">
+                                        <img src="{{ url_for('static', filename=settings.hotel_logo) }}"
+                                            alt="Current Logo">
+                                        <button type="button" class="btn-icon remove-logo">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="hotel-address">Address</label>
+                                <input type="text" id="hotel-address" name="hotel_address"
+                                    value="{{ settings.hotel_address }}">
+                            </div>
+                            <div class="form-group">
+                                <label for="hotel-phone">Phone Number</label>
+                                <input type="tel" id="hotel-phone" name="hotel_phone"
+                                    value="{{ settings.hotel_phone }}">
+                            </div>
+                        </div>
                     </div>
-                    <button type="submit" class="btn-primary">Save Changes</button>
+
+                    <div class="form-section">
+                        <h3 class="section-title">System Preferences</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="timezone">Time Zone</label>
+                                <select id="timezone" name="timezone" required>
+                                    {% for tz in timezones %}
+                                    <option value="{{ tz }}" {% if tz==settings.timezone %}selected{% endif %}>
+                                        {{ tz }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="language">Language</label>
+                                <select id="language" name="language" required>
+                                    {% for lang in languages %}
+                                    <option value="{{ lang.code }}" {% if lang.code==settings.language %}selected{%
+                                        endif %}>
+                                        {{ lang.name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="date-format">Date Format</label>
+                                <select id="date-format" name="date_format" required>
+                                    {% for format in date_formats %}
+                                    <option value="{{ format.value }}" {% if format.value==settings.date_format
+                                        %}selected{% endif %}>
+                                        {{ format.example }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="currency">Currency</label>
+                                <select id="currency" name="currency" required>
+                                    {% for curr in currencies %}
+                                    <option value="{{ curr.code }}" {% if curr.code==settings.currency %}selected{%
+                                        endif %}>
+                                        {{ curr.name }} ({{ curr.symbol }})
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3 class="section-title">Display Options</h3>
+                        <div class="form-row">
+                            <div class="form-group checkbox-group">
+                                <input type="checkbox" id="dark-mode" name="dark_mode" {% if settings.dark_mode
+                                    %}checked{% endif %}>
+                                <label for="dark-mode">Enable Dark Mode</label>
+                            </div>
+                            <div class="form-group checkbox-group">
+                                <input type="checkbox" id="compact-view" name="compact_view" {% if settings.compact_view
+                                    %}checked{% endif %}>
+                                <label for="compact-view">Compact View</label>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="items-per-page">Items Per Page</label>
+                                <select id="items-per-page" name="items_per_page">
+                                    <option value="10" {% if settings.items_per_page==10 %}selected{% endif %}>10
+                                    </option>
+                                    <option value="25" {% if settings.items_per_page==25 %}selected{% endif %}>25
+                                    </option>
+                                    <option value="50" {% if settings.items_per_page==50 %}selected{% endif %}>50
+                                    </option>
+                                    <option value="100" {% if settings.items_per_page==100 %}selected{% endif %}>100
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="default-page">Default Page</label>
+                                <select id="default-page" name="default_page">
+                                    <option value="dashboard" {% if settings.default_page=='dashboard' %}selected{%
+                                        endif %}>Dashboard</option>
+                                    <option value="bookings" {% if settings.default_page=='bookings' %}selected{% endif
+                                        %}>Bookings</option>
+                                    <option value="predict" {% if settings.default_page=='predict' %}selected{% endif
+                                        %}>Predict</option>
+                                    <option value="analytics" {% if settings.default_page=='analytics' %}selected{%
+                                        endif %}>Analytics</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="reset" class="btn-outline">Reset Changes</button>
+                        <button type="submit" class="btn-primary">Save Settings</button>
+                    </div>
                 </form>
+            </div>
+
+            <!-- Notification Settings -->
+            <div class="settings-section" id="notification-settings">
+                <h2>Notification Settings</h2>
+                <form class="settings-form" id="notification-settings-form">
+                    <div class="form-section">
+                        <h3 class="section-title">Email Notifications</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="smtp-host">SMTP Host</label>
+                                <input type="text" id="smtp-host" name="smtp_host" value="{{ settings.smtp_host }}"
+                                    placeholder="smtp.example.com">
+                            </div>
+                            <div class="form-group">
+                                <label for="smtp-port">SMTP Port</label>
+                                <input type="number" id="smtp-port" name="smtp_port" value="{{ settings.smtp_port }}"
+                                    placeholder="587">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="smtp-username">SMTP Username</label>
+                                <input type="text" id="smtp-username" name="smtp_username"
+                                    value="{{ settings.smtp_username }}" placeholder="username">
+                            </div>
+                            <div class="form-group">
+                                <label for="smtp-password">SMTP Password</label>
+                                <input type="password" id="smtp-password" name="smtp_password" placeholder="••••••••">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="smtp-from">From Email</label>
+                                <input type="email" id="smtp-from" name="smtp_from" value="{{ settings.smtp_from }}"
+                                    placeholder="noreply@example.com">
+                            </div>
+                            <div class="form-group checkbox-group">
+                                <input type="checkbox" id="smtp-ssl" name="smtp_ssl" {% if settings.smtp_ssl %}checked{%
+                                    endif %}>
+                                <label for="smtp-ssl">Use SSL/TLS</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3 class="section-title">Notification Preferences</h3>
+                        <div class="form-row">
+                            <div class="form-group checkbox-group">
+                                <input type="checkbox" id="notify-new-booking" name="notify_new_booking" {% if
+                                    settings.notify_new_booking %}checked{% endif %}>
+                                <label for="notify-new-booking">New Bookings</label>
+                            </div>
+                            <div class="form-group checkbox-group">
+                                <input type="checkbox" id="notify-cancellation" name="notify_cancellation" {% if
+                                    settings.notify_cancellation %}checked{% endif %}>
+                                <label for="notify-cancellation">Cancellations</label>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group checkbox-group">
+                                <input type="checkbox" id="notify-high-risk" name="notify_high_risk" {% if
+                                    settings.notify_high_risk %}checked{% endif %}>
+                                <label for="notify-high-risk">High-Risk Bookings</label>
+                            </div>
+                            <div class="form-group checkbox-group">
+                                <input type="checkbox" id="notify-check-in" name="notify_check_in" {% if
+                                    settings.notify_check_in %}checked{% endif %}>
+                                <label for="notify-check-in">Check-ins</label>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group checkbox-group">
+                                <input type="checkbox" id="notify-check-out" name="notify_check_out" {% if
+                                    settings.notify_check_out %}checked{% endif %}>
+                                <label for="notify-check-out">Check-outs</label>
+                            </div>
+                            <div class="form-group checkbox-group">
+                                <input type="checkbox" id="notify-system-alerts" name="notify_system_alerts" {% if
+                                    settings.notify_system_alerts %}checked{% endif %}>
+                                <label for="notify-system-alerts">System Alerts</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3 class="section-title">Notification Recipients</h3>
+                        <div class="form-group">
+                            <label for="notification-emails">Email Addresses</label>
+                            <textarea id="notification-emails" name="notification_emails"
+                                placeholder="Enter email addresses, one per line">{{ settings.notification_emails|join('\n') }}</textarea>
+                            <small>These emails will receive all system notifications</small>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn-outline" id="test-email">
+                            <i class="fas fa-paper-plane"></i>
+                            Test Email
+                        </button>
+                        <button type="submit" class="btn-primary">Save Settings</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Prediction Model Settings -->
+            <div class="settings-section" id="model-settings">
+                <h2>Prediction Model Settings</h2>
+                <form class="settings-form" id="model-settings-form">
+                    <div class="form-section">
+                        <h3 class="section-title">Model Configuration</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="model-type">Model Type</label>
+                                <select id="model-type" name="model_type" disabled>
+                                    <option>Random Forest Classifier</option>
+                                    <option>Gradient Boosting</option>
+                                    <option>Neural Network</option>
+                                </select>
+                                <small>Currently using: Random Forest (v{{ model_version }})</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="model-threshold">Cancellation Threshold</label>
+                                <input type="range" id="model-threshold" name="model_threshold" min="0" max="100"
+                                    step="1" value="{{ settings.model_threshold }}">
+                                <div class="threshold-value">
+                                    <span id="threshold-display">{{ settings.model_threshold }}</span>%
+                                </div>
+                                <small>Bookings with probability above this will be flagged as high-risk</small>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="model-retrain">Auto Retrain Frequency</label>
+                                <select id="model-retrain" name="model_retrain">
+                                    <option value="weekly" {% if settings.model_retrain=='weekly' %}selected{% endif %}>
+                                        Weekly</option>
+                                    <option value="monthly" {% if settings.model_retrain=='monthly' %}selected{% endif
+                                        %}>Monthly</option>
+                                    <option value="quarterly" {% if settings.model_retrain=='quarterly' %}selected{%
+                                        endif %}>Quarterly</option>
+                                    <option value="manual" {% if settings.model_retrain=='manual' %}selected{% endif %}>
+                                        Manual Only</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="model-features">Feature Selection</label>
+                                <select id="model-features" name="model_features" multiple>
+                                    {% for feature in model_features %}
+                                    <option value="{{ feature.value }}" {% if feature.selected %}selected{% endif %}>
+                                        {{ feature.name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                                <small>Hold Ctrl/Cmd to select multiple features</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3 class="section-title">Model Performance</h3>
+                        <div class="model-performance">
+                            <div class="performance-metric">
+                                <div class="metric-value">{{ (model_metrics.accuracy * 100)|round(1) }}%</div>
+                                <div class="metric-label">Accuracy</div>
+                            </div>
+                            <div class="performance-metric">
+                                <div class="metric-value">{{ (model_metrics.precision * 100)|round(1) }}%</div>
+                                <div class="metric-label">Precision</div>
+                            </div>
+                            <div class="performance-metric">
+                                <div class="metric-value">{{ (model_metrics.recall * 100)|round(1) }}%</div>
+                                <div class="metric-label">Recall</div>
+                            </div>
+                            <div class="performance-metric">
+                                <div class="metric-value">{{ (model_metrics.f1 * 100)|round(1) }}%</div>
+                                <div class="metric-label">F1 Score</div>
+                            </div>
+                        </div>
+                        <div class="last-trained">
+                            <i class="fas fa-clock"></i>
+                            Last trained: {{ model_metrics.last_trained|datetimeformat }}
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3 class="section-title">Model Actions</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <button type="button" class="btn-outline" id="train-model">
+                                    <i class="fas fa-brain"></i>
+                                    Train Model
+                                </button>
+                                <small>Train with latest data</small>
+                            </div>
+                            <div class="form-group">
+                                <button type="button" class="btn-outline" id="evaluate-model">
+                                    <i class="fas fa-chart-bar"></i>
+                                    Evaluate Model
+                                </button>
+                                <small>Run evaluation on test data</small>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <button type="button" class="btn-outline" id="export-model">
+                                    <i class="fas fa-download"></i>
+                                    Export Model
+                                </button>
+                                <small>Download model file</small>
+                            </div>
+                            <div class="form-group">
+                                <button type="button" class="btn-outline" id="import-model">
+                                    <i class="fas fa-upload"></i>
+                                    Import Model
+                                </button>
+                                <small>Upload trained model</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary">Save Settings</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Other settings sections would be here -->
+            <div class="settings-section" id="integrations-settings">
+                <!-- Integration settings content -->
+            </div>
+
+            <div class="settings-section" id="users-settings">
+                <!-- Users & permissions content -->
+            </div>
+
+            <div class="settings-section" id="backup-settings">
+                <!-- Backup & restore content -->
+            </div>
+
+            <div class="settings-section" id="advanced-settings">
+                <!-- Advanced settings content -->
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Settings navigation
+        document.querySelectorAll('.settings-nav li').forEach(item => {
+            item.addEventListener('click', function () {
+                const section = this.getAttribute('data-section');
+
+                // Update active nav item
+                document.querySelector('.settings-nav li.active').classList.remove('active');
+                this.classList.add('active');
+
+                // Show corresponding section
+                document.querySelector('.settings-section.active').classList.remove('active');
+                document.getElementById(`${section}-settings`).classList.add('active');
+            });
+        });
+
+        // Threshold slider
+        const thresholdSlider = document.getElementById('model-threshold');
+        const thresholdDisplay = document.getElementById('threshold-display');
+
+        thresholdSlider.addEventListener('input', function () {
+            thresholdDisplay.textContent = this.value;
+        });
+
+        // Test email button
+        document.getElementById('test-email').addEventListener('click', function () {
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+            this.disabled = true;
+
+            axios.post('/api/settings/test-email')
+                .then(response => {
+                    alert('Test email sent successfully!');
+                })
+                .catch(error => {
+                    console.error('Error sending test email:', error);
+                    alert('Failed to send test email. Check your SMTP settings.');
+                })
+                .finally(() => {
+                    this.innerHTML = '<i class="fas fa-paper-plane"></i> Test Email';
+                    this.disabled = false;
+                });
+        });
+
+        // Model training button
+        document.getElementById('train-model').addEventListener('click', function () {
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Training...';
+            this.disabled = true;
+
+            axios.post('/api/model/train')
+                .then(response => {
+                    alert('Model trained successfully! New accuracy: ' +
+                        (response.data.accuracy * 100).toFixed(1) + '%');
+                    // Update metrics display
+                    updateModelMetrics(response.data);
+                })
+                .catch(error => {
+                    console.error('Error training model:', error);
+                    alert('Failed to train model. See console for details.');
+                })
+                .finally(() => {
+                    this.innerHTML = '<i class="fas fa-brain"></i> Train Model';
+                    this.disabled = false;
+                });
+        });
+
+        // Form submissions
+        document.getElementById('general-settings-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+            saveSettings('general', this);
+        });
+
+        document.getElementById('notification-settings-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+            saveSettings('notifications', this);
+        });
+
+        document.getElementById('model-settings-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+            saveSettings('model', this);
+        });
+
+        function saveSettings(type, form) {
+            const submitBtn = form.querySelector('button[type="submit"]');
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            submitBtn.disabled = true;
+
+            const formData = new FormData(form);
+
+            axios.post(`/api/settings/${type}`, formData)
+                .then(response => {
+                    showAlert('Settings saved successfully!', 'success');
+                })
+                .catch(error => {
+                    console.error('Error saving settings:', error);
+                    showAlert('Failed to save settings. Please try again.', 'error');
+                })
+                .finally(() => {
+                    submitBtn.innerHTML = 'Save Settings';
+                    submitBtn.disabled = false;
+                });
+        }
+
+        function updateModelMetrics(metrics) {
+            // Implementation would update the metrics display with new values
+        }
+
+        function showAlert(message, type) {
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+                <span>${message}</span>
+            `;
+            document.querySelector('.settings-content').prepend(alert);
+            setTimeout(() => alert.remove(), 5000);
+        }
+    });
+</script>
 {% endblock %}
